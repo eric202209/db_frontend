@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Chart as ChartJS, LinearScale } from 'chart.js';
 ChartJS.register(LinearScale);
 import axios from 'axios';
@@ -30,29 +30,30 @@ const App = () => {
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [filter, setFilter] = useState({});
 
-    useEffect(() => {fetchData();}, []);
+    useEffect(() => { fetchData(); }, []);
 
     useEffect(() => {
-        document.body.className = isDarkMode ? 'dark-mode' : 'light-mode';}, [isDarkMode]);
-    
+        document.body.className = isDarkMode ? 'dark-mode' : 'light-mode';
+    }, [isDarkMode]);
+
     const fetchData = async () => {
         setLoading(true);
         const cachedData = localStorage.getItem('dashboardData');
         if (cachedData) {
-          setData(JSON.parse(cachedData));
-          setLoading(false);
-          return;
+            setData(JSON.parse(cachedData));
+            setLoading(false);
+            return;
         }
-      
+
         try {
-          const response = await axios.get('/api/data', { params: filter });
-          setData(response.data);
-          localStorage.setItem('dashboardData', JSON.stringify(response.data));
+            const response = await axios.get('/api/data', { params: filter });
+            setData(response.data);
+            localStorage.setItem('dashboardData', JSON.stringify(response.data));
         } catch (err) {
-          setError('Failed to fetch data. Please try again later.');
-          console.error('Error fetching data:', err);
+            setError('Failed to fetch data. Please try again later.');
+            console.error('Error fetching data:', err);
         } finally {
-          setLoading(false);
+            setLoading(false);
         }
     };
 
@@ -74,15 +75,17 @@ const App = () => {
         );
     };
 
-    const filteredData = data[selectedChart].filter(item => 
-        item.make?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.model?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
+    // Check if selectedChart data is available and is an array
+    const filteredData = Array.isArray(data[selectedChart])
+        ? data[selectedChart].filter(item => 
+            item.make?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item.model?.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+        : [];  // Default to an empty array if data is not available or not an array
 
     const exportToCSV = () => {
         const csvContent = "data:text/csv;charset=utf-8," 
-          + data[selectedChart].map(row => Object.values(row).join(",")).join("\n");
+            + data[selectedChart].map(row => Object.values(row).join(",")).join("\n");
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
@@ -98,50 +101,50 @@ const App = () => {
     if (error) {
         return <div className="error-message">{error}</div>;
     }
-    
+
     return (
-      <div className="app">
-        <h1>Fuel Consumption Dashboard</h1>
-            <Dashboard />
-      </div>,
-      <div className="app">
-        <h1>Fuel Consumption Dashboard</h1>
-        <button onClick={() => setIsDarkMode(!isDarkMode)}>
-            Toggle {isDarkMode ? 'Light' : 'Dark'} Mode
-        </button>
-        <Suspense fallback={<div>Loading...</div>}>
-            <FilterPanel onFilterChange={setFilter} />
-            <input
-               type="text"
-                placeholder="Search..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <select onChange={(e) => setSelectedChart(e.target.value)}>
-                {Object.entries(chartTitles).map(([key, value]) => (
-                    <option key={key} value={key}>{value}</option>
-                ))}
-            </select>
-            {filteredData.length > 0 ? (
-                <Chart data={filteredData} title={chartTitles[selectedChart]} type={selectedChart} />
-            ) : (
-                <div>No data available for the selected chart.</div>
-            )}
-            <div className="top-efficient">
-                <h2>Top Efficient Vehicles</h2>
-                {data.topEfficient && data.topEfficient.length > 0 ? (
-                    <DataTable
-                        data={data.topEfficient}
-                        onComparisonToggle={handleComparisonToggle}
-                    />
+        <div>
+            <h1>Fuel Consumption Dashboard</h1>
+            <Dashboard/>
+        </div>,
+        <div className="app">
+            <h1>Fuel Consumption Dashboard</h1>
+            <button onClick={() => setIsDarkMode(!isDarkMode)}>
+                Toggle {isDarkMode ? 'Light' : 'Dark'} Mode
+            </button>
+            <Suspense fallback={<div>Loading...</div>}>
+                <FilterPanel onFilterChange={setFilter} />
+                <input
+                    type="text"
+                    placeholder="Search..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <select onChange={(e) => setSelectedChart(e.target.value)} value={selectedChart}>
+                    {Object.entries(chartTitles).map(([key, value]) => (
+                        <option key={key} value={key}>{value}</option>
+                    ))}
+                </select>
+                {filteredData.length > 0 ? (
+                    <Chart data={filteredData} title={chartTitles[selectedChart]} type={selectedChart} />
                 ) : (
-                    <p className="no-data-message">No data available for top efficient vehicles.</p>
+                    <div>No data available for the selected chart.</div>
                 )}
-            </div>
-            {comparisonItems.length > 0 && <ComparisonView items={comparisonItems} />}
-            <button onClick={exportToCSV}>Export to CSV</button>
-        </Suspense>
-      </div>
+                <div className="top-efficient">
+                    <h2>Top Efficient Vehicles</h2>
+                    {data.topEfficient && data.topEfficient.length > 0 ? (
+                        <DataTable
+                            data={data.topEfficient}
+                            onComparisonToggle={handleComparisonToggle}
+                        />
+                    ) : (
+                        <p className="no-data-message">No data available for top efficient vehicles.</p>
+                    )}
+                </div>
+                {comparisonItems.length > 0 && <ComparisonView items={comparisonItems} />}
+                <button onClick={exportToCSV}>Export to CSV</button>
+            </Suspense>
+        </div>
     );
 };
 

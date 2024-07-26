@@ -737,8 +737,7 @@ const FilterPanel = ({ onFilterChange }) => {
                     <option value="2024">2024</option>
                 </select>            
             </div>
-            {/* <button type="submit">Apply Filters</button> */}
-            <button aria-label="Apply Filters" onClick={handleFilterApply}>Apply Filters</button>
+            <button type="submit">Apply Filters</button>
         </form>
     );
 };

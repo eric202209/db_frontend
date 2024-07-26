@@ -5,7 +5,7 @@ const oracledb = require('oracledb');
 require('dotenv').config();
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 3000;
 
 // require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 // console.log('All environment variables:', process.env);
@@ -38,6 +38,7 @@ app.use(express.json());
 
 // Serve static files from React build folder
 app.use(express.static(path.join(__dirname, 'build')));
+// app.use(express.static(path.join(__dirname, 'public')));
 
 // update your server to send appropriate cache-control headers
 app.use((req, res, next) => {
@@ -57,12 +58,12 @@ app.use(
     })
 );
 
-// // api endpoint to fetch data
+// api endpoint to fetch data
 app.get('/api/data', async(req,res) => {
     let connection;
     try{
         console.log('Attempting to get connection...');
-        connection = await oracledb.getConnection(dbConfig);
+        connection = await oracledb.getConnection();
         console.log('Connection successful');
 
         const avgConsMake = await connection.execute('SELECT * FROM temp_avg_cons_make');
@@ -161,19 +162,20 @@ app.get('/api/data', async (req, res) => {
 
 // Explicitly set MIME types for JS and CSS files
 app.get('*.js', function (req, res, next) {
-    res.set('application/javascript');
+    res.type('application/javascript');
     next();
 });
 
 // Middleware to set proper MIME type for CSS files
 app.get('*.css', function (req, res, next) {
-    res.set('text/css');
+    res.type('text/css');
     next();
 });
 
 // Serve your React application
 app.get('*', function(req, res) {
     res.sendFile(path.join(__dirname, 'build', 'index.html'));
+    // res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // start server
