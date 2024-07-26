@@ -28,9 +28,10 @@
   "author": "Eric Chen",
   "license": "MIT",
   "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
     "browserslist": "^4.23.2",
-    "react-scripts": "^5.0.1",
-    "webpack": "^5.93.0"
+    "react-scripts": "^3.0.1"
   },
   "browserslist": {
     "production": [

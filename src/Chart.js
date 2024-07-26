@@ -5,7 +5,6 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement);
 
 const Chart = ({ data = [], title, type }) => {
-
   if (!data || data.length === 0) {
     return <div>No data available for this chart.</div>;
   }
@@ -41,13 +40,13 @@ const Chart = ({ data = [], title, type }) => {
     },
     responsive: true,
     plugins: {
-        legend: {
-            position: 'top',
-        },
-        title: {
-            display: true,
-            text: title,
-        },
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: title,
+      },
     },
   };
 
@@ -75,9 +74,8 @@ const Chart = ({ data = [], title, type }) => {
           <p>Value: {selectedItem.avgCons || selectedItem.combCons || selectedItem.count || selectedItem.avgCo2 || selectedItem.percentage}</p>
         </div>
       )}
-    </div>        
+    </div>
   );
-
 };
 
 export default Chart;

@@ -123,4 +123,12 @@ tr:nth-child(even) {
     .filter-panel input, .filter-panel select, .filter-panel button {
         width: 100%;
     }
+
+    .dashboard {
+        padding: 10px;
+    }
+    
+    .chart {
+        width: 100%;
+    }
 }

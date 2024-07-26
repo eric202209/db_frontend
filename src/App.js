@@ -1,47 +1,58 @@
 import React, { useState, useEffect } from 'react';
 import { Chart as ChartJS, LinearScale } from 'chart.js';
 ChartJS.register(LinearScale);
-import Chart from './Chart'; 
-import Dashboard from './Dashboard';
-import DataTable from './DataTable';
-import FilterPanel from './FilterPanel';
-import ComparisonView from './ComparisonView';
-import './App.css';
 import axios from 'axios';
+import './App.css';
+
+const Chart = React.lazy(() => import('./Chart'));
+const Dashboard = React.lazy(() => import('./Dashboard'));
+const DataTable = React.lazy(() => import('./DataTable'));
+const FilterPanel = React.lazy(() => import('./FilterPanel'));
+const ComparisonView = React.lazy(() => import('./ComparisonView'));
 
 const App = () => {
     const [data, setData] = useState({
-        avgConsMake: [],
-        topEfficient: [],
-        fuelTypeDist: [],
-        co2ByClass: [],
-        bestSmog: [],
-        consByTrans: [],
-        co2RatingPct: [],
-        topLowCo2: []
+      avgConsMake: [],
+      topEfficient: [],
+      fuelTypeDist: [],
+      co2ByClass: [],
+      bestSmog: [],
+      consByTrans: [],
+      co2RatingPct: [],
+      topLowCo2: []
     });
-    const [filter, setFilter] = useState({});
+
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [selectedChart, setSelectedChart] = useState('avgConsMake');
     const [comparisonItems, setComparisonItems] = useState([]);
-    const [loading, setLoading] = useState(true); // Add loading state
-    const [error, setError] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isDarkMode, setIsDarkMode] = useState(false);
+    const [filter, setFilter] = useState({});
+
+    useEffect(() => {fetchData();}, []);
 
     useEffect(() => {
-        fetchData();
-    }, [filter]);
-
+        document.body.className = isDarkMode ? 'dark-mode' : 'light-mode';}, [isDarkMode]);
+    
     const fetchData = async () => {
         setLoading(true);
-        setError(null);
+        const cachedData = localStorage.getItem('dashboardData');
+        if (cachedData) {
+          setData(JSON.parse(cachedData));
+          setLoading(false);
+          return;
+        }
+      
         try {
-            const response = await axios.get('/api/data', { params: filter });
-            console.log('Fetched data:', response.data); // Log response data
-            setData(response.data);
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            setError('Failed to fetch data. Please try again later.');
+          const response = await axios.get('/api/data', { params: filter });
+          setData(response.data);
+          localStorage.setItem('dashboardData', JSON.stringify(response.data));
+        } catch (err) {
+          setError('Failed to fetch data. Please try again later.');
+          console.error('Error fetching data:', err);
         } finally {
-            setLoading(false);
+          setLoading(false);
         }
     };
 
@@ -63,49 +74,75 @@ const App = () => {
         );
     };
 
-    // return (
-    //     <div className="app">
-    //         <h1>Fuel Consumption Dashboard</h1>
-    //         <Dashboard />
-    //     </div>
-    // );
+    const filteredData = data[selectedChart].filter(item => 
+        item.make?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.model?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+
+    const exportToCSV = () => {
+        const csvContent = "data:text/csv;charset=utf-8," 
+          + data[selectedChart].map(row => Object.values(row).join(",")).join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "fuel_consumption_data.csv");
+        document.body.appendChild(link);
+        link.click();
+    };
+
+    if (loading) {
+        return <div className="loading">Loading...</div>;
+    }
+
+    if (error) {
+        return <div className="error-message">{error}</div>;
+    }
+    
     return (
-        <div className="app">
-            <h1>Fuel Consumption Dashboard</h1>
+      <div className="app">
+        <h1>Fuel Consumption Dashboard</h1>
+            <Dashboard />
+      </div>,
+      <div className="app">
+        <h1>Fuel Consumption Dashboard</h1>
+        <button onClick={() => setIsDarkMode(!isDarkMode)}>
+            Toggle {isDarkMode ? 'Light' : 'Dark'} Mode
+        </button>
+        <Suspense fallback={<div>Loading...</div>}>
             <FilterPanel onFilterChange={setFilter} />
+            <input
+               type="text"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+            />
             <select onChange={(e) => setSelectedChart(e.target.value)}>
                 {Object.entries(chartTitles).map(([key, value]) => (
                     <option key={key} value={key}>{value}</option>
                 ))}
             </select>
-            {loading ? (
-                <div>Loading...</div>
-            ) : error ? (
-                <div>Error: {error}</div>
+            {filteredData.length > 0 ? (
+                <Chart data={filteredData} title={chartTitles[selectedChart]} type={selectedChart} />
             ) : (
-                <>
-                    {data[selectedChart] && data[selectedChart].length > 0 ? (
-                        <Chart data={data[selectedChart]} title={chartTitles[selectedChart]} type={selectedChart} />
-                    ) : (
-                        <div>No data available for the selected chart.</div>
-                    )}
-                    <div className="top-efficient">
-                        <h2>Top Efficient Vehicles</h2>
-                        {data.topEfficient && data.topEfficient.length > 0 ? (
-                            <DataTable
-                                data={data.topEfficient}
-                                onComparisonToggle={handleComparisonToggle}
-                            />
-                        ) : (
-                            <p className="no-data-message">No data available for top efficient vehicles.</p>
-                        )}
-                    </div>
-                    {comparisonItems.length > 0 && <ComparisonView items={comparisonItems} />}
-                </>
+                <div>No data available for the selected chart.</div>
             )}
-        </div>
+            <div className="top-efficient">
+                <h2>Top Efficient Vehicles</h2>
+                {data.topEfficient && data.topEfficient.length > 0 ? (
+                    <DataTable
+                        data={data.topEfficient}
+                        onComparisonToggle={handleComparisonToggle}
+                    />
+                ) : (
+                    <p className="no-data-message">No data available for top efficient vehicles.</p>
+                )}
+            </div>
+            {comparisonItems.length > 0 && <ComparisonView items={comparisonItems} />}
+            <button onClick={exportToCSV}>Export to CSV</button>
+        </Suspense>
+      </div>
     );
-
 };
 
 export default App;
