@@ -1,0 +1,27 @@
+{
+    "version": 3,
+    "file": "static/js/98.b5ef905d.chunk.js",
+    "mappings": "uJAEA,MA4BA,EA5BuBA,IAAgB,IAAf,MAAEC,GAAOD,EAC7B,OACIE,EAAAA,EAAAA,MAAA,OAAKC,UAAU,kBAAiBC,SAAA,EAChCC,EAAAA,EAAAA,KAAA,MAAAD,SAAI,gBACJF,EAAAA,EAAAA,MAAA,SAAAE,SAAA,EACEC,EAAAA,EAAAA,KAAA,SAAAD,UACEF,EAAAA,EAAAA,MAAA,MAAAE,SAAA,EACEC,EAAAA,EAAAA,KAAA,MAAAD,SAAI,UACJC,EAAAA,EAAAA,KAAA,MAAAD,SAAI,WACJC,EAAAA,EAAAA,KAAA,MAAAD,SAAI,sBACJC,EAAAA,EAAAA,KAAA,MAAAD,SAAI,wBAGRC,EAAAA,EAAAA,KAAA,SAAAD,SACGH,EAAMK,KAAI,CAACC,EAAMC,KAChBN,EAAAA,EAAAA,MAAA,MAAAE,SAAA,EACEC,EAAAA,EAAAA,KAAA,MAAAD,SAAKG,EAAKE,QACVJ,EAAAA,EAAAA,KAAA,MAAAD,SAAKG,EAAKG,SACVL,EAAAA,EAAAA,KAAA,MAAAD,SAAKG,EAAKI,mBACVN,EAAAA,EAAAA,KAAA,MAAAD,SAAKG,EAAKK,iBAJHJ,YASX,C",
+    "sources": [
+        "ComparisonView.js"
+    ],
+    "sourcesContent": [
+        "import React from 'react';\r\n\r\nconst ComparisonView = ({ items }) => {\r\n    return (\r\n        <div className=\"comparison-view\">\r\n        <h2>Comparison</h2>\r\n        <table>\r\n          <thead>\r\n            <tr>\r\n              <th>Make</th>\r\n              <th>Model</th>\r\n              <th>Fuel Consumption</th>\r\n              <th>CO2 Emissions</th>\r\n            </tr>\r\n          </thead>\r\n          <tbody>\r\n            {items.map((item, index) => (\r\n              <tr key={index}>\r\n                <td>{item.make}</td>\r\n                <td>{item.model}</td>\r\n                <td>{item.fuelConsumption}</td>\r\n                <td>{item.co2Emissions}</td>\r\n              </tr>\r\n            ))}\r\n          </tbody>\r\n        </table>\r\n      </div>\r\n    );\r\n};\r\n\r\nexport default ComparisonView;"
+    ],
+    "names": [
+        "_ref",
+        "items",
+        "_jsxs",
+        "className",
+        "children",
+        "_jsx",
+        "map",
+        "item",
+        "index",
+        "make",
+        "model",
+        "fuelConsumption",
+        "co2Emissions"
+    ],
+    "sourceRoot": ""
+}
