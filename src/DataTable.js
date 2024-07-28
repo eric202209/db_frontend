@@ -39,8 +39,8 @@ const DataTable = ({ data, title, onComparisonToggle }) => {
 
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = data.slice(indexOfFirstItem, indexOfLastItem);
-
+    const currentItems = filteredItems.slice(indexOfFirstItem, indexOfLastItem);
+    
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     return (
@@ -59,11 +59,11 @@ const DataTable = ({ data, title, onComparisonToggle }) => {
                         <th onClick={() => requestSort('model')}>Model</th>
                         <th onClick={() => requestSort('combined_consumption')}>Combined Consumption</th>
                         <th onClick={() => requestSort('co2_emissions')}>CO2 Emissions</th>
-                        <th onClick={() => requestSort('compare')}>Compare</th>
+                        <th>Compare</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {Array.isArray(currentItems) && currentItems.map((vehicle, index) => (
+                    {currentItems.map((vehicle, index) => (
                         <tr key={index}>
                             <td>{vehicle.make || ''}</td>
                             <td>{vehicle.model || ''}</td>

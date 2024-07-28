@@ -30,7 +30,7 @@ const App = () => {
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [filter, setFilter] = useState({});
 
-    useEffect(() => { fetchData(); }, []);
+    useEffect(() => { fetchData(); }, [filter]);
 
     useEffect(() => {
         document.body.className = isDarkMode ? 'dark-mode' : 'light-mode';
@@ -38,17 +38,9 @@ const App = () => {
 
     const fetchData = async () => {
         setLoading(true);
-        const cachedData = localStorage.getItem('dashboardData');
-        if (cachedData) {
-            setData(JSON.parse(cachedData));
-            setLoading(false);
-            return;
-        }
-
         try {
             const response = await axios.get('/api/data', { params: filter });
             setData(response.data);
-            localStorage.setItem('dashboardData', JSON.stringify(response.data));
         } catch (err) {
             setError('Failed to fetch data. Please try again later.');
             console.error('Error fetching data:', err);

@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const helmet = require('helmet');
 const oracledb = require('oracledb');
+oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
 require('dotenv').config();
 
 const envConfig = {
@@ -19,7 +20,10 @@ async function initialize() {
         await oracledb.createPool({
             user: envConfig.DB_USER,
             password: envConfig.DB_PASSWORD,
-            connectString: envConfig.DB_CONNECT_STRING
+            connectString: envConfig.DB_CONNECT_STRING,
+            poolMin: 4,
+            poolMax: 10,
+            poolIncrement: 1
         });
         console.log('Connection pool created');
     } catch (err) {

@@ -35,21 +35,20 @@ const Dashboard = () => {
         setError(null);
         try {
             const response = await axios.get('/api/data', { params: filter });
-            // setData(response.data);
-            console.log('Fetched data:', response.data); // Log response data
+            setData(response.data);
 
-            // Parse the response data
-            const parsedData = {
-                avgConsMake: response.data.avgConsMake.map(item => ({ make: item.MAKE, avgCons: item.AVG_CONS })),
-                topEfficient: response.data.topEfficient.map(item => ({ make: item.MAKE, model: item.MODEL, combCons: item.COMB_CONS })),
-                fuelTypeDist: response.data.fuelTypeDist.map(item => ({ fuelType: item.FUEL_TYPE, count: item.COUNT_FT })),
-                co2ByClass: response.data.co2ByClass.map(item => ({ vehClass: item.VEH_CLASS, avgCo2: item.AVG_CO2 })),
-                bestSmog: response.data.bestSmog.map(item => ({ make: item.MAKE, model: item.MODEL, smogRating: item.SMOG_RATING })),
-                consByTrans: response.data.consByTrans.map(item => ({ trans: item.TRANS, avgCons: item.AVG_CONS })),
-                co2RatingPct: response.data.co2RatingPct.map(item => ({ co2Rating: item.CO2_RATING, count: item.COUNT_CR, percentage: item.PERCENTAGE })),
-                topLowCo2: response.data.topLowCo2.map(item => ({ make: item.MAKE, avgCo2: item.AVG_CO2 }))
-            };            
-            setData(parsedData);
+            // // Parse the response data
+            // const parsedData = {
+            //     avgConsMake: response.data.avgConsMake.map(item => ({ make: item.MAKE, avgCons: item.AVG_CONS })),
+            //     topEfficient: response.data.topEfficient.map(item => ({ make: item.MAKE, model: item.MODEL, combCons: item.COMB_CONS })),
+            //     fuelTypeDist: response.data.fuelTypeDist.map(item => ({ fuelType: item.FUEL_TYPE, count: item.COUNT_FT })),
+            //     co2ByClass: response.data.co2ByClass.map(item => ({ vehClass: item.VEH_CLASS, avgCo2: item.AVG_CO2 })),
+            //     bestSmog: response.data.bestSmog.map(item => ({ make: item.MAKE, model: item.MODEL, smogRating: item.SMOG_RATING })),
+            //     consByTrans: response.data.consByTrans.map(item => ({ trans: item.TRANS, avgCons: item.AVG_CONS })),
+            //     co2RatingPct: response.data.co2RatingPct.map(item => ({ co2Rating: item.CO2_RATING, count: item.COUNT_CR, percentage: item.PERCENTAGE })),
+            //     topLowCo2: response.data.topLowCo2.map(item => ({ make: item.MAKE, avgCo2: item.AVG_CO2 }))
+            // };            
+            // setData(parsedData);
         } catch (error) {
             setError('Failed to fetch data. Please try again.');
             console.error('Error fetching data:', error);
@@ -76,13 +75,8 @@ const Dashboard = () => {
         );
     };
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
-
-    if (error) {
-        return <div>Error: {error}</div>;
-    }
+    {loading && <div>Loading...</div>}
+    {error && <div>Error: {error}</div>}
 
     return (
         <div className="dashboard">
