@@ -60,14 +60,62 @@ app.get('/api/data', async (req, res) => {
         connection = await oracledb.getConnection();
         console.log('Connection successful');
 
-        const avgConsMake = await connection.execute('SELECT * FROM temp_avg_cons_make');
-        const topEfficient = await connection.execute('SELECT * FROM temp_top_efficient');
-        const fuelTypeDist = await connection.execute('SELECT * FROM temp_fuel_type_dist');
-        const co2ByClass = await connection.execute('SELECT * FROM temp_co2_by_class');
-        const bestSmog = await connection.execute('SELECT * FROM temp_best_smog');
-        const consByTrans = await connection.execute('SELECT * FROM temp_cons_by_trans');
-        const co2RatingPct = await connection.execute('SELECT * FROM temp_co2_rating_pct');
-        const topLowCo2 = await connection.execute('SELECT * FROM temp_top_low_co2');
+        // Use the filter parameters
+        const { make, fuelType, transmission, year } = req.query;
+
+        const avgConsMakeQuery = `
+            SELECT make, avg_cons
+            FROM temp_avg_cons_make
+            WHERE (:make IS NULL OR make = :make)
+        `;
+        const avgConsMake = await connection.execute(avgConsMakeQuery, { make });
+
+        const topEfficientQuery = `
+            SELECT make, model, comb_cons
+            FROM temp_top_efficient
+            WHERE (:make IS NULL OR make = :make)
+        `;
+        const topEfficient = await connection.execute(topEfficientQuery, { make });
+
+        const fuelTypeDistQuery = `
+            SELECT fuel_type, count_ft
+            FROM temp_fuel_type_dist
+            WHERE (:fuelType IS NULL OR fuel_type = :fuelType)
+        `;
+        const fuelTypeDist = await connection.execute(fuelTypeDistQuery, { fuelType });
+
+        const co2ByClassQuery = `
+            SELECT veh_class, avg_co2
+            FROM temp_co2_by_class
+        `;
+        const co2ByClass = await connection.execute(co2ByClassQuery);
+
+        const bestSmogQuery = `
+            SELECT make, model, smog_rating
+            FROM temp_best_smog
+            WHERE (:make IS NULL OR make = :make)
+        `;
+        const bestSmog = await connection.execute(bestSmogQuery, { make });
+
+        const consByTransQuery = `
+            SELECT trans, avg_cons
+            FROM temp_cons_by_trans
+            WHERE (:transmission IS NULL OR trans = :transmission)
+        `;
+        const consByTrans = await connection.execute(consByTransQuery, { transmission });
+
+        const co2RatingPctQuery = `
+            SELECT co2_rating, count_cr, percentage
+            FROM temp_co2_rating_pct
+        `;
+        const co2RatingPct = await connection.execute(co2RatingPctQuery);
+
+        const topLowCo2Query = `
+            SELECT make, avg_co2
+            FROM temp_top_low_co2
+            WHERE (:make IS NULL OR make = :make)
+        `;
+        const topLowCo2 = await connection.execute(topLowCo2Query, { make });
 
         res.json({
             avgConsMake: avgConsMake.rows,
@@ -82,13 +130,13 @@ app.get('/api/data', async (req, res) => {
 
     } catch (err) {
         console.error('Error fetching data:', err);
-        res.status(500).json({ error: 'Error fetching data' });
+        res.status(500).json({ error: 'An error occurred while fetching data' });
     } finally {
         if (connection) {
             try {
                 await connection.close();
             } catch (err) {
-                console.error('Error closing connection:', err);
+                console.error('Error closing database connection:', err);
             }
         }
     }

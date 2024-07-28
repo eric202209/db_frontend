@@ -9,6 +9,7 @@
     "@mui/material": "^5.16.4",
     "axios": "^1.7.2",
     "chart.js": "^4.4.3",
+    "chartjs-plugin-zoom": "^2.0.1",
     "concurrently": "^8.2.2",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",

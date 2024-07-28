@@ -22,6 +22,17 @@ const FilterPanel = ({ onFilterChange }) => {
         onFilterChange(filters);
     };
 
+    const resetFilters = () => {
+        setFilters({
+            make: '',
+            model: '',
+            fuelType: '',
+            transmission: '',
+            year: ''
+        });
+        onFilterChange({});
+    };
+
     return (
         <form onSubmit={handleSubmit} className="filter-panel">
             <div>
@@ -738,6 +749,7 @@ const FilterPanel = ({ onFilterChange }) => {
                 </select>            
             </div>
             <button type="submit">Apply Filters</button>
+            <button type="button" onClick={resetFilters}>Reset Filters</button>
         </form>
     );
 };

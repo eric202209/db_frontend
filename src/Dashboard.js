@@ -28,13 +28,16 @@ const Dashboard = () => {
         fetchData();
     }, [filter]);
 
+    const [isLoading, setIsLoading] = useState(false);
+
     const fetchData = async () => {
         setLoading(true);
         setError(null);
         try {
             const response = await axios.get('/api/data', { params: filter });
+            // setData(response.data);
             console.log('Fetched data:', response.data); // Log response data
-            
+
             // Parse the response data
             const parsedData = {
                 avgConsMake: response.data.avgConsMake.map(item => ({ make: item.MAKE, avgCons: item.AVG_CONS })),
@@ -45,15 +48,13 @@ const Dashboard = () => {
                 consByTrans: response.data.consByTrans.map(item => ({ trans: item.TRANS, avgCons: item.AVG_CONS })),
                 co2RatingPct: response.data.co2RatingPct.map(item => ({ co2Rating: item.CO2_RATING, count: item.COUNT_CR, percentage: item.PERCENTAGE })),
                 topLowCo2: response.data.topLowCo2.map(item => ({ make: item.MAKE, avgCo2: item.AVG_CO2 }))
-            };
-            
-            // setData(response.data);
+            };            
             setData(parsedData);
         } catch (error) {
+            setError('Failed to fetch data. Please try again.');
             console.error('Error fetching data:', error);
-            setError('Failed to fetch data. Please try again later.');
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     };
 
@@ -85,6 +86,10 @@ const Dashboard = () => {
 
     return (
         <div className="dashboard">
+            {isLoading && <div className="loading-indicator">Loading...</div>}
+            {error && <div className="error-message">{error}</div>}
+            <button onClick={fetchData}>Refresh Data</button>
+            
             <FilterPanel onFilterChange={setFilter} />
             <select onChange={(e) => setSelectedChart(e.target.value)}>
                 {Object.entries(chartTitles).map(([key, value]) => (
