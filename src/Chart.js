@@ -72,15 +72,18 @@ const Chart = ({ data = [], title, type }) => {
     
     return (
         <div className="chart">
-        <h2>{title}</h2>
-        <ChartComponent data={chartData} options={chartOptions} />
-        {selectedItem && (
-          <div className="detail-view">
-            <h3>{selectedItem.make || selectedItem.vehClass || selectedItem.fuelType || selectedItem.trans || selectedItem.co2Rating}</h3>          
-            <p>Value: {selectedItem.avgCons || selectedItem.combCons || selectedItem.count || selectedItem.avgCo2 || selectedItem.percentage}</p>
-          </div>
-        )}
-      </div>
+          {type === 'bar' && <Bar data={chartData} />}
+          {type === 'line' && <Line data={chartData} />}
+          {type === 'pie' && <Pie data={chartData} />}
+          <h2>{title}</h2>
+          <ChartComponent data={chartData} options={chartOptions} />
+          {selectedItem && (
+            <div className="detail-view">
+              <h3>{selectedItem.make || selectedItem.vehClass || selectedItem.fuelType || selectedItem.trans || selectedItem.co2Rating}</h3>          
+              <p>Value: {selectedItem.avgCons || selectedItem.combCons || selectedItem.count || selectedItem.avgCo2 || selectedItem.percentage}</p>
+            </div>
+          )}
+        </div>
     );
 };
 

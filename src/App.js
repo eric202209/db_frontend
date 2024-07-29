@@ -51,7 +51,7 @@ const App = () => {
     });
 
     const chartTitles = {
-        avgConsMake: 'Average Consumption by Make',
+        avgConsMake: 'Avg Consumption by Make Year',
         co2ByClass: 'CO2 Emissions by Class',
         fuelTypeDist: 'Fuel Type Distribution',
         bestSmog: 'Best Smog Ratings',

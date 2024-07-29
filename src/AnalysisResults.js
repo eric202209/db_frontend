@@ -3,7 +3,7 @@ import Chart from './Chart';
 
 const AnalysisResults = ({ data }) => {
     const chartTitles = {
-        avgConsMake: "Average Consumption by Make",
+        avgConsMake: "Avg Consumption by Make Year",
         co2ByClass: "CO2 Emissions by Vehicle Class",
         fuelTypeDist: "Fuel Type Distribution",
         bestSmog: "Best Smog Ratings",
