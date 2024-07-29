@@ -14,7 +14,7 @@ body {
     border-radius: 8px;
 }
   
-h1 {
+h1, h2 {
     color: #333;
     text-align: center;
     margin-bottom: 20px;
@@ -31,7 +31,7 @@ h1 {
     justify-content: space-between;
     align-items: center;
 }
-  
+
 .filter-panel input, .filter-panel select {
     padding: 8px;
     border: 1px solid #ddd;
@@ -46,6 +46,37 @@ h1 {
     border: none;
     border-radius: 4px;
     cursor: pointer;
+}
+
+.filtered-results {
+    margin-bottom: 20px;
+}
+
+.vehicle-item {
+    background-color: #f9f9f9;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+.comparison-view {
+    margin-top: 20px;
+    overflow-x: auto;
+}
+
+.comparison-view table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.comparison-view th, .comparison-view td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.comparison-view th {
+    background-color: #f2f2f2;
 }
 
 .chart-selector {
@@ -94,12 +125,24 @@ h1 {
     margin-top: 20px;
 }
 
+.loading, .error-message {
+    text-align: center;
+    padding: 20px;
+    font-size: 18px;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
 }
-  
+
+.loading, .error-message {
+    text-align: center;
+    padding: 20px;
+    font-size: 18px;
+}
+
 th, td {
     border: 1px solid #ddd;
     padding: 12px;

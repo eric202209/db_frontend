@@ -2,25 +2,22 @@ const express = require('express');
 const path = require('path');
 const helmet = require('helmet');
 const oracledb = require('oracledb');
-oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
 require('dotenv').config();
 
-const envConfig = {
-    DB_USER: process.env.DB_USER,
-    DB_PASSWORD: process.env.DB_PASSWORD,
-    DB_CONNECT_STRING: process.env.DB_CONNECT_STRING,
-    PORT: process.env.PORT || 3000
-};
-
-const port = envConfig.PORT;
 const app = express();
+const port = process.env.PORT || 3000;
 
+// Middleware
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'build')));
+
+// Database connection
 async function initialize() {
     try {
         await oracledb.createPool({
-            user: envConfig.DB_USER,
-            password: envConfig.DB_PASSWORD,
-            connectString: envConfig.DB_CONNECT_STRING,
+            user: process.env.DB_USER,
+            password: process.env.DB_PASSWORD,
+            connectString: process.env.DB_CONNECT_STRING,
             poolMin: 4,
             poolMax: 10,
             poolIncrement: 1
@@ -32,11 +29,82 @@ async function initialize() {
     }
 }
 
-// Middleware to parse JSON request bodies
-app.use(express.json());
+// API Routes
+app.get('/api/filtered-data', async (req, res) => {
+    let connection;
+    try {
+        connection = await oracledb.getConnection();
+        const { modelYear, make, model, vehicleClass, engineSize, cylinders, transmission, fuelType } = req.query;
+        
+        let query = `SELECT * FROM fuel_consumption_ratings WHERE 1=1`;
+        const bindParams = {};
+        
+        if (modelYear) {
+            query += ` AND model_year = :modelYear`;
+            bindParams.modelYear = modelYear;
+        }
+        if (make) {
+            query += ` AND make = :make`;
+            bindParams.make = make;
+        }
+        if (model) {
+            query += ` AND model = :model`;
+            bindParams.model = model;
+        }
+        if (vehicleClass) {
+            query += ` AND vehicleClass = :vehicleClass`;
+            bindParams.vehicleClass = vehicleClass;
+        }
+        if (engineSize) {
+            query += ` AND engineSize = :engineSize`;
+            bindParams.engineSize = engineSize;
+        }
+        if (cylinders) {
+            query += ` AND cylinders = :cylinders`;
+            bindParams.cylinders = cylinders;
+        }
+        if (transmission) {
+            query += ` AND transmission = :transmission`;
+            bindParams.transmission = transmission;
+        }
+        if (fuelType) {
+            query += ` AND fuelType = :fuelType`;
+            bindParams.fuelType = fuelType;
+        }
+        // Add similar conditions for other filter parameters
+        
+        const result = await connection.execute(query, bindParams, { outFormat: oracledb.OUT_FORMAT_OBJECT });
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'An error occurred while fetching data' });
+    } finally {
+        if (connection) {
+            try {
+                await connection.close();
+            } catch (err) {
+                console.error('Error closing connection', err);
+            }
+        }
+    }
+});
 
-// Serve static files from React build folder
-app.use(express.static(path.join(__dirname, 'build')));
+// Testing
+app.get('/api/filter-options', (req, res) => {
+    const filterOptions = {
+        modelYear: ["2024"],
+        make: ["Toyota", "Ford"],
+        model: ["Camry SE", "Escape"],
+        vehicleClass: ["Mid-size", "Sport utility vehicle: Small"],
+        engineSize: ["2.5", "1.5"],
+        cylinders: ["4", "3"],
+        transmission: ["AS8", "A8"],
+        fuelType: ["X", "X"]
+    };
+
+    res.json(filterOptions);
+});
+
 
 // Set Cache-Control headers
 app.use((req, res, next) => {
@@ -64,62 +132,15 @@ app.get('/api/data', async (req, res) => {
         connection = await oracledb.getConnection();
         console.log('Connection successful');
 
-        // Use the filter parameters
-        const { make, fuelType, transmission, year } = req.query;
-
-        const avgConsMakeQuery = `
-            SELECT make, avg_cons
-            FROM temp_avg_cons_make
-            WHERE (:make IS NULL OR make = :make)
-        `;
-        const avgConsMake = await connection.execute(avgConsMakeQuery, { make });
-
-        const topEfficientQuery = `
-            SELECT make, model, comb_cons
-            FROM temp_top_efficient
-            WHERE (:make IS NULL OR make = :make)
-        `;
-        const topEfficient = await connection.execute(topEfficientQuery, { make });
-
-        const fuelTypeDistQuery = `
-            SELECT fuel_type, count_ft
-            FROM temp_fuel_type_dist
-            WHERE (:fuelType IS NULL OR fuel_type = :fuelType)
-        `;
-        const fuelTypeDist = await connection.execute(fuelTypeDistQuery, { fuelType });
-
-        const co2ByClassQuery = `
-            SELECT veh_class, avg_co2
-            FROM temp_co2_by_class
-        `;
-        const co2ByClass = await connection.execute(co2ByClassQuery);
-
-        const bestSmogQuery = `
-            SELECT make, model, smog_rating
-            FROM temp_best_smog
-            WHERE (:make IS NULL OR make = :make)
-        `;
-        const bestSmog = await connection.execute(bestSmogQuery, { make });
-
-        const consByTransQuery = `
-            SELECT trans, avg_cons
-            FROM temp_cons_by_trans
-            WHERE (:transmission IS NULL OR trans = :transmission)
-        `;
-        const consByTrans = await connection.execute(consByTransQuery, { transmission });
-
-        const co2RatingPctQuery = `
-            SELECT co2_rating, count_cr, percentage
-            FROM temp_co2_rating_pct
-        `;
-        const co2RatingPct = await connection.execute(co2RatingPctQuery);
-
-        const topLowCo2Query = `
-            SELECT make, avg_co2
-            FROM temp_top_low_co2
-            WHERE (:make IS NULL OR make = :make)
-        `;
-        const topLowCo2 = await connection.execute(topLowCo2Query, { make });
+        // Fetch data from your temporary tables
+        const avgConsMake = await connection.execute('SELECT * FROM temp_avg_cons_make');
+        const topEfficient = await connection.execute('SELECT * FROM temp_top_efficient');
+        const fuelTypeDist = await connection.execute('SELECT * FROM temp_fuel_type_dist');
+        const co2ByClass = await connection.execute('SELECT * FROM temp_co2_by_class');
+        const bestSmog = await connection.execute('SELECT * FROM temp_best_smog');
+        const consByTrans = await connection.execute('SELECT * FROM temp_cons_by_trans');
+        const co2RatingPct = await connection.execute('SELECT * FROM temp_co2_rating_pct');
+        const topLowCo2 = await connection.execute('SELECT * FROM temp_top_low_co2');
 
         res.json({
             avgConsMake: avgConsMake.rows,
@@ -131,16 +152,15 @@ app.get('/api/data', async (req, res) => {
             co2RatingPct: co2RatingPct.rows,
             topLowCo2: topLowCo2.rows
         });
-
     } catch (err) {
-        console.error('Error fetching data:', err);
-        res.status(500).json({ error: 'An error occurred while fetching data' });
+        console.error('Error in /api/data:', err);
+        res.status(500).json({ error: 'An error occurred while fetching analysis data' });
     } finally {
         if (connection) {
             try {
                 await connection.close();
             } catch (err) {
-                console.error('Error closing database connection:', err);
+                console.error('Error closing connection', err);
             }
         }
     }
@@ -157,8 +177,8 @@ app.get('*.css', function (req, res, next) {
     next();
 });
 
-// Serve your React application
-app.get('*', function (req, res) {
+// Serve React app
+app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
@@ -168,4 +188,7 @@ initialize()
         app.listen(port, () => {
             console.log(`Server running on: http://localhost:${port}`);
         });
+    })
+    .catch(err => {
+        console.error('Failed to initialize database', err);
     });
