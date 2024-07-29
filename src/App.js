@@ -1,7 +1,8 @@
-import React, { useState, useEffect, Suspense } from 'react'; 
+import React, { useState, useEffect, Suspense } from 'react';
 import axios from 'axios';
 import { Chart as ChartJS, LinearScale, CategoryScale, BarElement, PointElement, LineElement, ArcElement, Title, Tooltip, Legend } from 'chart.js';
 import './App.css';
+
 ChartJS.register(
     LinearScale,
     CategoryScale,
@@ -30,7 +31,7 @@ const App = () => {
         bestSmog: [],
         consByTrans: [],
         co2RatingPct: [],
-        topLowCo2: [], 
+        topLowCo2: [],
         topEfficient: [],
     });
     const [error, setError] = useState(null);
@@ -61,13 +62,11 @@ const App = () => {
         topEfficient: 'Top Efficient Vehicles',
     };
 
-    useEffect(() => { 
+    useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             try {
                 const response = await axios.get('/api/data');
-                console.log('Raw API response:', response);
-                console.log('Data received:', response.data);
                 setData(response.data);
             } catch (err) {
                 console.error('Error fetching data:', err);
@@ -77,6 +76,18 @@ const App = () => {
             }
         };
         fetchData();
+    }, []);
+
+    useEffect(() => {
+        const fetchOptions = async () => {
+            try {
+                const response = await axios.get('/api/filter-options');
+                setOptions(response.data);
+            } catch (error) {
+                console.error('Error fetching filter options:', error);
+            }
+        };
+        fetchOptions();
     }, []);
 
     const handleFilterChange = async (filters) => {
@@ -90,45 +101,17 @@ const App = () => {
     };
 
     const handleComparisonToggle = (item) => {
-        setComparisonItems(prevItems => 
+        setComparisonItems(prevItems =>
             prevItems.includes(item)
                 ? prevItems.filter(i => i !== item)
                 : [...prevItems, item]
         );
     };
 
-    const fetchOptions = async () => {
-        try {
-            const response = await fetch('/api/filter-options');
-            const text = await response.text(); // Get raw text
-            console.log('Raw response:', text);
-            try {
-                const data = JSON.parse(text); // Attempt to parse JSON
-                setOptions(data);
-            } catch (error) {
-                console.error('Error parsing JSON:', error);
-            }
-        } catch (error) {
-            console.error('Error fetching filter options:', error);
-        }
-    };
-
-    useEffect(() => {
-        fetchOptions();
-    }, []);
-
-    if (loading) {
-        return <div className="loading">Loading...</div>;
-    }
-
-    if (error) {
-        return <div className="error-message">{error}</div>;
-    }
-
     const exportToCSV = () => {
         if (!data[selectedChart]) return;
 
-        const csvContent = "data:text/csv;charset=utf-8," 
+        const csvContent = "data:text/csv;charset=utf-8,"
             + data[selectedChart].map(row => Object.values(row).join(",")).join("\n");
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
@@ -139,48 +122,65 @@ const App = () => {
         link.remove();
     };
 
-    console.log('Data:', data);
-    console.log('Selected Chart:', selectedChart);
+    if (loading) {
+        return <div className="loading">Loading...</div>;
+    }
+
+    if (error) {
+        return <div className="error-message">{error}</div>;
+    }
 
     return (
         <div className={`app ${isDarkMode ? 'dark-mode' : ''}`}>
-            <h1>Fuel Consumption Dashboard</h1>
-            <button onClick={() => setIsDarkMode(!isDarkMode)}>
-                Toggle {isDarkMode ? 'Light' : 'Dark'} Mode
-            </button>
-            <Suspense fallback={<div>Loading...</div>}>
-                <FilterPanel onFilterChange={handleFilterChange} />
-                <input
-                    type="text"
-                    placeholder="Search..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <select onChange={(e) => setSelectedChart(e.target.value)} value={selectedChart}>
-                    {Object.entries(chartTitles).map(([key, value]) => (
-                        <option key={key} value={key}>{value}</option>
-                    ))}
-                </select>
-                {Array.isArray(data[selectedChart]) && data[selectedChart].length > 0 ? (
-                    <Chart data={data[selectedChart]} title={chartTitles[selectedChart]} type={selectedChart} />
-                    ) : (
-                    <div>No data available for the selected chart.</div>
-                )}
-                <div className="top-efficient">
-                    <h2>Top Efficient Vehicles</h2>
-                    {data.topEfficient && data.topEfficient.length > 0 ? (
-                        <DataTable
-                            data={data.topEfficient}
-                            onComparisonToggle={handleComparisonToggle}
+            <div className="dashboard">
+                <h1>Fuel Consumption Dashboard</h1>
+                <button className="mode-toggle" onClick={() => setIsDarkMode(!isDarkMode)}>
+                    Toggle {isDarkMode ? 'Light' : 'Dark'} Mode
+                </button>
+                <Suspense fallback={<div className="loading">Loading...</div>}>
+                    <FilterPanel onFilterChange={handleFilterChange} options={options} />
+                    <div className="search-container">
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                         />
-                    ) : (
-                        <p className="no-data-message">No data available for top efficient vehicles.</p>
-                    )}
-                </div>
-                {comparisonItems.length > 0 && <ComparisonView items={comparisonItems} />}
-                <AnalysisResults data={data} /> {/* Added AnalysisResults component */}
-                <button onClick={exportToCSV}>Export to CSV</button>
-            </Suspense>
+                    </div>
+                    <div className="chart-selector">
+                        <select onChange={(e) => setSelectedChart(e.target.value)} value={selectedChart}>
+                            {Object.entries(chartTitles).map(([key, value]) => (
+                                <option key={key} value={key}>{value}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="chart">
+                        {Array.isArray(data[selectedChart]) && data[selectedChart].length > 0 ? (
+                            <Chart data={data[selectedChart]} title={chartTitles[selectedChart]} type={selectedChart} />
+                        ) : (
+                            <div className="no-data-message">No data available for the selected chart.</div>
+                        )}
+                    </div>
+                    <div className="data-tables">
+                        {Object.keys(chartTitles).map(key => (
+                            <div className={`chart-section ${key}`} key={key}>
+                                <h2>{chartTitles[key]}</h2>
+                                {data[key] && data[key].length > 0 ? (
+                                    <DataTable
+                                        data={data[key]}
+                                        onComparisonToggle={handleComparisonToggle}
+                                    />
+                                ) : (
+                                    <p className="no-data-message">No data available for {chartTitles[key]}.</p>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                    {comparisonItems.length > 0 && <ComparisonView items={comparisonItems} />}
+                    <AnalysisResults data={data} />
+                    <button className="export-button" onClick={exportToCSV}>Export to CSV</button>
+                </Suspense>
+            </div>
         </div>
     );
 };
