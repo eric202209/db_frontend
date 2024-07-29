@@ -12,7 +12,7 @@ ChartJS.register(
     Title,
     Tooltip,
     Legend
-  );
+);
 
 const Chart = React.lazy(() => import('./Chart'));
 const Dashboard = React.lazy(() => import('./Dashboard'));
@@ -39,7 +39,6 @@ const App = () => {
     const [comparisonItems, setComparisonItems] = useState([]);
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-
     const [options, setOptions] = useState({
         modelYear: [],
         make: [],
@@ -67,6 +66,7 @@ const App = () => {
             setLoading(true);
             try {
                 const response = await axios.get('/api/data');
+                console.log('Raw API response:', response);
                 console.log('Data received:', response.data);
                 setData(response.data);
             } catch (err) {
@@ -163,7 +163,7 @@ const App = () => {
                 </select>
                 {Array.isArray(data[selectedChart]) && data[selectedChart].length > 0 ? (
                     <Chart data={data[selectedChart]} title={chartTitles[selectedChart]} type={selectedChart} />
-                ) : (
+                    ) : (
                     <div>No data available for the selected chart.</div>
                 )}
                 <div className="top-efficient">

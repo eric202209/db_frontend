@@ -13,19 +13,20 @@ const Chart = ({ data = [], title, type }) => {
     console.log('Chart data:', data);
 
     const chartData = {
-        labels: Array.isArray(data) ? data.map(item => item.make || item.vehClass || item.fuelType || item.trans || item.co2Rating || '') : [],
-        datasets: [
-          {
-            label: title,
-            data: Array.isArray(data) ? data.map(item => item.avgCons || item.combCons || item.count || item.avgCo2 || item.percentage || 0) : [],
-            backgroundColor: 'rgba(75,192,192,0.6)',
-            borderColor: 'rgba(75,192,192,1)',
-            borderWidth: 1,
-            hoverBackgroundColor: 'rgba(75,192,192,0.4)',
-            hoverBorderColor: 'rgba(75,192,192,1)'
-          }
-        ]
+      labels: data.map(item => item.MAKE || item.VEHICLE_CLASS || item.FUEL_TYPE || item.TRANSMISSION || item.CO2_RATING || ''),
+      datasets: [
+        {
+          label: title,
+          data: data.map(item => item.AVG_CONS || item.COMB_CONS || item.COUNT || item.AVG_CO2 || item.PERCENTAGE || 0),
+          backgroundColor: 'rgba(75,192,192,0.6)',
+          borderColor: 'rgba(75,192,192,1)',
+          borderWidth: 1,
+          hoverBackgroundColor: 'rgba(75,192,192,0.4)',
+          hoverBorderColor: 'rgba(75,192,192,1)'
+        }
+      ]
     };
+    console.log('Processed chart data:', chartData);
 
     const chartOptions = {
         scales: {
@@ -55,10 +56,14 @@ const Chart = ({ data = [], title, type }) => {
     switch(type) {
         case 'fuelTypeDist':
         case 'co2RatingPct':
+        case 'topEfficient':
             ChartComponent = Pie;
             break;
         case 'consByTrans':
         case 'co2ByClass':
+        case 'avgConsMake':
+        case 'bestSmog':
+        case 'topLowCo2':
             ChartComponent = Line;
             break;
         default:

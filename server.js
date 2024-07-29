@@ -89,20 +89,43 @@ app.get('/api/filtered-data', async (req, res) => {
     }
 });
 
-// Testing
-app.get('/api/filter-options', (req, res) => {
-    const filterOptions = {
-        modelYear: ["2024"],
-        make: ["Toyota", "Ford"],
-        model: ["Camry SE", "Escape"],
-        vehicleClass: ["Mid-size", "Sport utility vehicle: Small"],
-        engineSize: ["2.5", "1.5"],
-        cylinder: ["4", "3"],
-        transmission: ["AS8", "A8"],
-        fuelType: ["X", "X"]
-    };
-    res.setHeader('Content-Type', 'application/json');
-    res.json(filterOptions);
+// the filter-options endpoint
+app.get('/api/filter-options', async (req, res) => {
+    let connection;
+    try {
+        connection = await oracledb.getConnection();
+        
+        const modelYears = await connection.execute('SELECT DISTINCT model_year FROM fuel_consumption_ratings ORDER BY model_year');
+        const makes = await connection.execute('SELECT DISTINCT make FROM fuel_consumption_ratings ORDER BY make');
+        const models = await connection.execute('SELECT DISTINCT model FROM fuel_consumption_ratings ORDER BY model');
+        const vehicleClasses = await connection.execute('SELECT DISTINCT vehicle_class FROM fuel_consumption_ratings ORDER BY vehicle_class');
+        const engineSizes = await connection.execute('SELECT DISTINCT engine_size FROM fuel_consumption_ratings ORDER BY engine_size');
+        const cylinders = await connection.execute('SELECT DISTINCT cylinders FROM fuel_consumption_ratings ORDER BY cylinders');
+        const transmissions = await connection.execute('SELECT DISTINCT transmission FROM fuel_consumption_ratings ORDER BY transmission');
+        const fuelTypes = await connection.execute('SELECT DISTINCT fuel_type FROM fuel_consumption_ratings ORDER BY fuel_type');
+
+        res.json({
+            modelYear: modelYears.rows.map(row => row.MODEL_YEAR),
+            make: makes.rows.map(row => row.MAKE),
+            model: models.rows.map(row => row.MODEL),
+            vehicleClass: vehicleClasses.rows.map(row => row.VEHICLE_CLASS),
+            engineSize: engineSizes.rows.map(row => row.ENGINE_SIZE),
+            cylinder: cylinders.rows.map(row => row.CYLINDERS),
+            transmission: transmissions.rows.map(row => row.TRANSMISSION),
+            fuelType: fuelTypes.rows.map(row => row.FUEL_TYPE)
+        });
+    } catch (err) {
+        console.error('Error fetching filter options:', err);
+        res.status(500).json({ error: 'An error occurred while fetching filter options' });
+    } finally {
+        if (connection) {
+            try {
+                await connection.close();
+            } catch (err) {
+                console.error('Error closing connection', err);
+            }
+        }
+    }
 });
 
 
@@ -128,10 +151,8 @@ app.use(
 app.get('/api/data', async (req, res) => {
     let connection;
     try {
-        console.log('Attempting to get connection...');
         connection = await oracledb.getConnection();
-        console.log('Connection successful');
-
+        
         // Fetch data from your temporary tables
         const avgConsMake = await connection.execute('SELECT * FROM temp_avg_cons_make');
         const topEfficient = await connection.execute('SELECT * FROM temp_top_efficient');
@@ -141,6 +162,15 @@ app.get('/api/data', async (req, res) => {
         const consByTrans = await connection.execute('SELECT * FROM temp_cons_by_trans');
         const co2RatingPct = await connection.execute('SELECT * FROM temp_co2_rating_pct');
         const topLowCo2 = await connection.execute('SELECT * FROM temp_top_low_co2');
+        
+        console.log('avgConsMake query result:', avgConsMake);
+        console.log('topEfficient query result:', topEfficient);
+        console.log('fuelTypeDist query result:', fuelTypeDist);
+        console.log('co2ByClass query result:', co2ByClass);
+        console.log('bestSmog query result:', bestSmog);
+        console.log('consByTrans query result:', consByTrans);
+        console.log('co2RatingPct query result:', co2RatingPct);
+        console.log('topLowCo2 query result:', topLowCo2);
 
         res.json({
             avgConsMake: avgConsMake.rows,

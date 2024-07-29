@@ -24,19 +24,17 @@ const FilterPanel = ({ onFilterChange }) => {
     });
 
     useEffect(() => {
-        // Fetch options from the backend
+        const fetchOptions = async () => {
+            try {
+                const response = await fetch('/api/filter-options');
+                const data = await response.json();
+                setOptions(data);
+            } catch (error) {
+                console.error('Error fetching filter options:', error);
+            }
+        };
         fetchOptions();
     }, []);
-
-    const fetchOptions = async () => {
-        try {
-            const response = await fetch('/api/filter-options');
-            const data = await response.json();
-            setOptions(data);
-        } catch (error) {
-            console.error('Error fetching filter options:', error);
-        }
-    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
