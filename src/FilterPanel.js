@@ -7,20 +7,20 @@ const FilterPanel = ({ onFilterChange }) => {
         model: '',
         vehicleClass: '',
         engineSize: '',
-        cylinders: '',
+        cylinder: '',
         transmission: '',
         fuelType: ''
     });
 
     const [options, setOptions] = useState({
-        modelYears: [],
-        makes: [],
-        models: [],
-        vehicleClasses: [],
-        engineSizes: [],
-        cylindersCounts: [],
-        transmissions: [],
-        fuelTypes: []
+        modelYear: [],
+        make: [],
+        model: [],
+        vehicleClass: [],
+        engineSize: [],
+        cylinder: [],
+        transmission: [],
+        fuelType: []
     });
 
     useEffect(() => {
@@ -58,7 +58,7 @@ const FilterPanel = ({ onFilterChange }) => {
             model: '',
             vehicleClass: '',
             engineSize: '',
-            cylinders: '',
+            cylinder: '',
             transmission: '',
             fuelType: ''
         });
@@ -74,7 +74,7 @@ const FilterPanel = ({ onFilterChange }) => {
                 <option value="2022">2022</option>
                 <option value="2021">2021</option>
                 <option value="2020">2020</option>
-                {options.modelYears.map(year => (
+                {options.modelYear.map(year => (
                     <option key={year} value={year}>{year}</option>
                 ))}
             </select>
@@ -120,7 +120,7 @@ const FilterPanel = ({ onFilterChange }) => {
                 <option value="Toyota">Toyota</option>
                 <option value="Volkswagen">Volkswagen</option>
                 <option value="Volvo">Volvo</option>
-                {options.makes.map(make => (
+                {options.make.map(make => (
                     <option key={make} value={make}>{make}</option>
                 ))}
             </select>
@@ -744,7 +744,7 @@ const FilterPanel = ({ onFilterChange }) => {
                 <option value="Z NISMO">Z NISMO</option>
                 <option value="Z4 M40i">Z4 M40i</option>
                 <option value="Z4 sDrive30i">Z4 sDrive30i</option>
-                {options.models.map(model => (
+                {options.model.map(model => (
                     <option key={model} value={model}>{model}</option>
                 ))}
             </select>
@@ -764,7 +764,7 @@ const FilterPanel = ({ onFilterChange }) => {
                 <option value="Station wagon: Small">Station wagon: Small</option>
                 <option value="Subcompact">Subcompact</option>
                 <option value="Two-seater">Two-seater</option>
-                {options.vehicleClasses.map(vClass => (
+                {options.vehicleClass.map(vClass => (
                     <option key={vClass} value={vClass}>{vClass}</option>
                 ))}
             </select>
@@ -804,12 +804,12 @@ const FilterPanel = ({ onFilterChange }) => {
                 <option value="6.5">6.5</option>
                 <option value="6.7">6.7</option>
                 <option value="8">8</option>
-                {options.engineSizes.map(size => (
+                {options.engineSize.map(size => (
                     <option key={size} value={size}>{size} L</option>
                 ))}
             </select>
 
-            <select name="cylinders" value={filters.cylinders} onChange={handleChange}>
+            <select name="cylinder" value={filters.cylinder} onChange={handleChange}>
                 <option value="">All Cylinder Counts</option>
                 <option value="3">3</option>
                 <option value="4">4</option>
@@ -818,7 +818,7 @@ const FilterPanel = ({ onFilterChange }) => {
                 <option value="10">10</option>
                 <option value="12">12</option>
                 <option value="16">16</option>
-                {options.cylindersCounts.map(count => (
+                {options.cylinder.map(count => (
                     <option key={count} value={count}>{count}</option>
                 ))}
             </select>
@@ -847,7 +847,7 @@ const FilterPanel = ({ onFilterChange }) => {
                 <option value="M5">M5</option>
                 <option value="M6">M6</option>
                 <option value="M7">M7</option>
-                {options.transmissions.map(trans => (
+                {options.transmission.map(trans => (
                     <option key={trans} value={trans}>{trans}</option>
                 ))}
             </select>
@@ -858,7 +858,7 @@ const FilterPanel = ({ onFilterChange }) => {
                 <option value="E">E</option>
                 <option value="X">X</option>
                 <option value="Z">Z</option>
-                {options.fuelTypes.map(fuel => (
+                {options.fuelType.map(fuel => (
                     <option key={fuel} value={fuel}>{fuel}</option>
                 ))}
             </select>

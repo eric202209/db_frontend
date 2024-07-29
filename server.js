@@ -34,7 +34,7 @@ app.get('/api/filtered-data', async (req, res) => {
     let connection;
     try {
         connection = await oracledb.getConnection();
-        const { modelYear, make, model, vehicleClass, engineSize, cylinders, transmission, fuelType } = req.query;
+        const { modelYear, make, model, vehicleClass, engineSize, cylinder, transmission, fuelType } = req.query;
         
         let query = `SELECT * FROM fuel_consumption_ratings WHERE 1=1`;
         const bindParams = {};
@@ -59,9 +59,9 @@ app.get('/api/filtered-data', async (req, res) => {
             query += ` AND engineSize = :engineSize`;
             bindParams.engineSize = engineSize;
         }
-        if (cylinders) {
-            query += ` AND cylinders = :cylinders`;
-            bindParams.cylinders = cylinders;
+        if (cylinder) {
+            query += ` AND cylinder = :cylinder`;
+            bindParams.cylinder = cylinder;
         }
         if (transmission) {
             query += ` AND transmission = :transmission`;
@@ -97,11 +97,11 @@ app.get('/api/filter-options', (req, res) => {
         model: ["Camry SE", "Escape"],
         vehicleClass: ["Mid-size", "Sport utility vehicle: Small"],
         engineSize: ["2.5", "1.5"],
-        cylinders: ["4", "3"],
+        cylinder: ["4", "3"],
         transmission: ["AS8", "A8"],
         fuelType: ["X", "X"]
     };
-
+    res.setHeader('Content-Type', 'application/json');
     res.json(filterOptions);
 });
 

@@ -46,7 +46,7 @@ const App = () => {
         model: [],
         vehicleClass: [],
         engineSize: [],
-        cylinders: [],
+        cylinder: [],
         transmission: [],
         fuelType: []
     });
