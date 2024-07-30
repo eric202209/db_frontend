@@ -48,7 +48,9 @@ const App = () => {
         engineSize: [],
         cylinder: [],
         transmission: [],
-        fuelType: []
+        fuelType: [],
+        smogRating: [], 
+        topEfficient: []
     });
 
     const chartTitles = {
@@ -85,6 +87,7 @@ const App = () => {
                 setOptions(response.data);
             } catch (error) {
                 console.error('Error fetching filter options:', error);
+                setError('Failed to load filter options');
             }
         };
         fetchOptions();

@@ -34,7 +34,7 @@ app.get('/api/filtered-data', async (req, res) => {
     let connection;
     try {
         connection = await oracledb.getConnection();
-        const { modelYear, make, model, vehicleClass, engineSize, cylinder, transmission, fuelType } = req.query;
+        const { modelYear, make, model, vehicleClass, engineSize, cylinder, transmission, fuelType, smogRating, topEfficient } = req.query;
         
         let query = `SELECT * FROM fuel_consumption_ratings WHERE 1=1`;
         const bindParams = {};
@@ -71,6 +71,14 @@ app.get('/api/filtered-data', async (req, res) => {
             query += ` AND fuelType = :fuelType`;
             bindParams.fuelType = fuelType;
         }
+        if (smogRating) {
+            query += ` AND smogRating = :smogRating`;
+            bindParams.smogRating = smogRating;
+        }
+        if (topEfficient) {
+            query += ` AND topEfficient = :topEfficient`;
+            bindParams.topEfficient = topEfficient;
+        }
         // Add similar conditions for other filter parameters
         
         const result = await connection.execute(query, bindParams, { outFormat: oracledb.OUT_FORMAT_OBJECT });
@@ -89,7 +97,7 @@ app.get('/api/filtered-data', async (req, res) => {
     }
 });
 
-// the filter-options endpoint
+// API route to fetch filter options
 app.get('/api/filter-options', async (req, res) => {
     let connection;
     try {
@@ -103,6 +111,8 @@ app.get('/api/filter-options', async (req, res) => {
         const cylinders = await connection.execute('SELECT DISTINCT cylinders FROM fuel_consumption_ratings ORDER BY cylinders');
         const transmissions = await connection.execute('SELECT DISTINCT transmission FROM fuel_consumption_ratings ORDER BY transmission');
         const fuelTypes = await connection.execute('SELECT DISTINCT fuel_type FROM fuel_consumption_ratings ORDER BY fuel_type');
+        const smogRatings = await connection.execute('SELECT DISTINCT smog_rating FROM fuel_consumption_ratings ORDER BY smog_rating');
+        const topEfficients = await connection.execute('SELECT DISTINCT combined_consumption FROM fuel_consumption_ratings ORDER BY combined_consumption');
 
         res.json({
             modelYear: modelYears.rows.map(row => row.MODEL_YEAR),
@@ -112,7 +122,9 @@ app.get('/api/filter-options', async (req, res) => {
             engineSize: engineSizes.rows.map(row => row.ENGINE_SIZE),
             cylinder: cylinders.rows.map(row => row.CYLINDERS),
             transmission: transmissions.rows.map(row => row.TRANSMISSION),
-            fuelType: fuelTypes.rows.map(row => row.FUEL_TYPE)
+            fuelType: fuelTypes.rows.map(row => row.FUEL_TYPE),
+            smogRating: smogRatings.rows.map(row => row.SMOG_RATING),
+            topEfficient: topEfficients.rows.map(row => row.COMBINED_CONSUMPTION)
         });
     } catch (err) {
         console.error('Error fetching filter options:', err);

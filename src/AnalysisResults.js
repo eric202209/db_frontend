@@ -14,7 +14,7 @@ const AnalysisResults = ({ data }) => {
         { key: 'topEfficient', title: "Top Efficient Vehicles", type: 'bar' }
     ];
 
-    const formatChartData = (rawData, key) => {
+    const formatChartData = (rawData) => {
         if (!rawData || rawData.length === 0) return [];
         
         let formattedData = rawData.map(item => ({
@@ -35,7 +35,7 @@ const AnalysisResults = ({ data }) => {
                 <div key={config.key} className="chart-section">
                     <h3>{config.title}</h3>
                     <Chart 
-                        data={formatChartData(data[config.key], config.key, config.type)}
+                        data={formatChartData(data[config.key])}
                         type={config.type}
                         title={config.title}
                     />
