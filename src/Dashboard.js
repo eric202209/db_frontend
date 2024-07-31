@@ -1,9 +1,3 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import FilterPanel from './FilterPanel';
-import ComparisonView from './ComparisonView';
-import AnalysisResults from './AnalysisResults';
-
 const Dashboard = () => {
     const [filteredData, setFilteredData] = useState([]);
     const [analysisData, setAnalysisData] = useState({});
@@ -22,7 +16,6 @@ const Dashboard = () => {
             setAnalysisData(response.data);
         } catch (err) {
             setError('Failed to fetch analysis data. Please try again later.');
-            console.error('Error fetching analysis data:', err);
         } finally {
             setLoading(false);
         }
@@ -34,12 +27,11 @@ const Dashboard = () => {
             setFilteredData(response.data);
         } catch (err) {
             setError('Failed to apply filters. Please try again.');
-            console.error('Error applying filters:', err);
         }
     };
 
     const handleComparisonToggle = (item) => {
-        setComparisonItems(prevItems => 
+        setComparisonItems(prevItems =>
             prevItems.some(i => i.id === item.id)
                 ? prevItems.filter(i => i.id !== item.id)
                 : [...prevItems, item]

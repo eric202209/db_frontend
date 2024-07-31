@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const FilterPanel = ({ onFilterChange }) => {
     const [filters, setFilters] = useState({
@@ -30,9 +31,20 @@ const FilterPanel = ({ onFilterChange }) => {
     useEffect(() => {
         const fetchOptions = async () => {
             try {
-                const response = await fetch('/api/filter-options');
-                const data = await response.json();
-                setOptions(data);
+                const response = await axios.get('/api/filter-options');
+                const data = response.data;
+                setOptions({
+                    modelYear: data.modelYear || [],
+                    make: data.make || [],
+                    model: data.model || [],
+                    vehicleClass: data.vehicleClass || [],
+                    engineSize: data.engineSize || [],
+                    cylinder: data.cylinder || [],
+                    transmission: data.transmission || [],
+                    fuelType: data.fuelType || [],
+                    smogRating: data.smogRating || [],
+                    topEfficient: data.topEfficient || []
+                });
             } catch (error) {
                 console.error('Error fetching filter options:', error);
             }

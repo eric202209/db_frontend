@@ -38,45 +38,45 @@ app.get('/api/filtered-data', async (req, res) => {
     
     let query = `SELECT * FROM fuel_consumption_ratings WHERE 1=1`;
     const bindParams = {};
-    
+
     if (modelYear) {
-      query += ` AND model_year = :modelYear`;
+      query += ` AND MODEL_YEAR = :modelYear`;
       bindParams.modelYear = modelYear;
     }
     if (make) {
-      query += ` AND make = :make`;
+      query += ` AND MAKE = :make`;
       bindParams.make = make;
     }
     if (model) {
-      query += ` AND model = :model`;
+      query += ` AND MODEL = :model`;
       bindParams.model = model;
     }
     if (vehicleClass) {
-      query += ` AND vehicleClass = :vehicleClass`;
+      query += ` AND VEHICLE_CLASS = :vehicleClass`;
       bindParams.vehicleClass = vehicleClass;
     }
     if (engineSize) {
-      query += ` AND engineSize = :engineSize`;
+      query += ` AND ENGINE_SIZE = :engineSize`;
       bindParams.engineSize = engineSize;
     }
     if (cylinder) {
-      query += ` AND cylinder = :cylinder`;
+      query += ` AND CYLINDERS = :cylinder`;
       bindParams.cylinder = cylinder;
     }
     if (transmission) {
-      query += ` AND transmission = :transmission`;
+      query += ` AND TRANSMISSION = :transmission`;
       bindParams.transmission = transmission;
     }
     if (fuelType) {
-      query += ` AND fuelType = :fuelType`;
+      query += ` AND FUEL_TYPE = :fuelType`;
       bindParams.fuelType = fuelType;
     }
     if (smogRating) {
-      query += ` AND smogRating = :smogRating`;
+      query += ` AND SMOG_RATING = :smogRating`;
       bindParams.smogRating = smogRating;
     }
     if (topEfficient) {
-      query += ` AND topEfficient = :topEfficient`;
+      query += ` AND COMBINED_CONSUMPTION = :topEfficient`;
       bindParams.topEfficient = topEfficient;
     }
 
@@ -100,7 +100,7 @@ app.get('/api/filter-options', async (req, res) => {
   let connection;
   try {
     connection = await oracledb.getConnection();
-    
+
     const modelYears = await connection.execute('SELECT DISTINCT model_year FROM fuel_consumption_ratings ORDER BY model_year');
     const makes = await connection.execute('SELECT DISTINCT make FROM fuel_consumption_ratings ORDER BY make');
     const models = await connection.execute('SELECT DISTINCT model FROM fuel_consumption_ratings ORDER BY model');
@@ -113,16 +113,16 @@ app.get('/api/filter-options', async (req, res) => {
     const topEfficients = await connection.execute('SELECT DISTINCT combined_consumption FROM fuel_consumption_ratings ORDER BY combined_consumption');
 
     res.json({
-      modelYear: modelYears.rows.map(row => row.MODEL_YEAR),
-      make: makes.rows.map(row => row.MAKE),
-      model: models.rows.map(row => row.MODEL),
-      vehicleClass: vehicleClasses.rows.map(row => row.VEHICLE_CLASS),
-      engineSize: engineSizes.rows.map(row => row.ENGINE_SIZE),
-      cylinder: cylinders.rows.map(row => row.CYLINDERS),
-      transmission: transmissions.rows.map(row => row.TRANSMISSION),
-      fuelType: fuelTypes.rows.map(row => row.FUEL_TYPE),
-      smogRating: smogRatings.rows.map(row => row.SMOG_RATING),
-      topEfficient: topEfficients.rows.map(row => row.COMBINED_CONSUMPTION)
+      modelYear: modelYears.rows.map(row => row.MODEL_YEAR).filter(value => value !== null),
+      make: makes.rows.map(row => row.MAKE).filter(value => value !== null),
+      model: models.rows.map(row => row.MODEL).filter(value => value !== null),
+      vehicleClass: vehicleClasses.rows.map(row => row.VEHICLE_CLASS).filter(value => value !== null),
+      engineSize: engineSizes.rows.map(row => row.ENGINE_SIZE).filter(value => value !== null),
+      cylinder: cylinders.rows.map(row => row.CYLINDERS).filter(value => value !== null),
+      transmission: transmissions.rows.map(row => row.TRANSMISSION).filter(value => value !== null),
+      fuelType: fuelTypes.rows.map(row => row.FUEL_TYPE).filter(value => value !== null),
+      smogRating: smogRatings.rows.map(row => row.SMOG_RATING).filter(value => value !== null),
+      topEfficient: topEfficients.rows.map(row => row.COMBINED_CONSUMPTION).filter(value => value !== null)
     });
   } catch (err) {
     console.error('Error fetching filter options:', err);
@@ -132,14 +132,21 @@ app.get('/api/filter-options', async (req, res) => {
       try {
         await connection.close();
       } catch (err) {
-        console.error('Error closing connection', err);
+        console.error('Error closing connection:', err);
       }
     }
   }
 });
 
+    
+
 app.use((req, res, next) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  next();
+});
+
+app.use((req, res, next) => {
+  res.setHeader('Content-Type', 'application/json');
   next();
 });
 
@@ -147,6 +154,9 @@ app.use(
   helmet.contentSecurityPolicy({
     directives: {
       defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "blob:"],
       scriptSrcElem: ["'self'", "http://ff.kis.v2.scr.kaspersky-labs.com", "ws://ff.kis.v2.scr.kaspersky-labs.com"],
     },
   })
