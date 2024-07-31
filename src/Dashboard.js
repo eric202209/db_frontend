@@ -1,3 +1,9 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import FilterPanel from './FilterPanel'; 
+import ComparisonView from './ComparisonView'; 
+import AnalysisResults from './AnalysisResults';
+
 const Dashboard = () => {
     const [filteredData, setFilteredData] = useState([]);
     const [analysisData, setAnalysisData] = useState({});
