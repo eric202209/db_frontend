@@ -28,14 +28,16 @@ const Dashboard = () => {
         }
     };
 
-    const handleFilterChange = async (filters) => {
+    const handleFilterChange = async (selectedVehicles) => {
         try {
-            const response = await axios.get('/api/filtered-data', { params: filters });
-            setFilteredData(response.data);
+          const response = await axios.get('/api/filtered-data', {
+            params: { vehicles: JSON.stringify(selectedVehicles) }
+          });
+          setData(prevData => ({ ...prevData, filteredVehicles: response.data }));
         } catch (err) {
-            setError('Failed to apply filters. Please try again.');
+          setError('Failed to apply filters. Please try again.');
         }
-    };
+      };
 
     const handleComparisonToggle = (item) => {
         setComparisonItems(prevItems =>

@@ -46,8 +46,8 @@ const App = () => {
     useEffect(() => {
         const fetchOptions = async () => {
             try {
-                const response = await axios.get('/api/filter-options');
-                setOptions(response.data);
+                const response = await axios.get('/api/vehicle-options');
+                setOptions({ vehicleOptions: response.data });
             } catch (error) {
                 setError('Failed to load filter options');
             }
@@ -55,10 +55,11 @@ const App = () => {
         fetchOptions();
     }, []);
 
-    const handleFilterChange = async (filters) => {
+    const handleFilterChange = async (selectedVehicles) => {
         try {
-            const response = await axios.get('/api/filtered-data', { params: filters });
-            console.log('Filtered Data:', response.data); // Log filtered data
+            const response = await axios.get('/api/filtered-data', {
+                params: { vehicles: JSON.stringify(selectedVehicles) }
+            });
             setData(prevData => ({ ...prevData, filteredVehicles: response.data }));
         } catch (err) {
             setError('Failed to apply filters. Please try again.');
@@ -103,7 +104,7 @@ const App = () => {
                     Toggle {isDarkMode ? 'Light' : 'Dark'} Mode
                 </button>
                 <Suspense fallback={<div className="loading">Loading...</div>}>
-                    <FilterPanel onFilterChange={handleFilterChange} options={options} />
+                    <FilterPanel onFilterChange={handleFilterChange} options={options.vehicleOptions || []} />
                     <div className="chart-selector">
                         <select onChange={(e) => setSelectedChart(e.target.value)} value={selectedChart}>
                             {Object.entries(chartTitles).map(([key, value]) => (

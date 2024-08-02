@@ -15,10 +15,16 @@ ChartJS.register(
 );
 
 const Chart = ({ data, type, title }) => {
-  if (!data || data.length === 0) {
+  if (!data || !Array.isArray(data) || data.length === 0) {
     return <div>No data available for this chart.</div>;
   }
 
+  // Ensure data has the expected structure
+  if (!data[0].hasOwnProperty('label') || !data[0].hasOwnProperty('value')) {
+    console.error('Invalid data format for chart:', data);
+    return <div>Error: Invalid data format for chart.</div>;
+  }
+  
   const labels = data.map(item => item.label);
   const values = data.map(item => item.value);
 
