@@ -33,6 +33,7 @@ h2 {
   color: #333;
   text-align: center;
   margin-bottom: 20px;
+  font-size: 2.5em;
 }
 
 .dark-mode h1,
@@ -60,10 +61,11 @@ h2 {
 .filter-panel select,
 .search-container input,
 .chart-selector select {
-  padding: 8px;
-  border: 1px solid #ddd;
+  padding: 10px;
+  border: 1px solid #ccc;
   border-radius: 4px;
   flex-grow: 1;
+  width: calc(100% - 20px);
 }
 
 .dark-mode .filter-panel input,
@@ -78,18 +80,24 @@ h2 {
 .filter-panel button,
 .mode-toggle,
 .export-button {
-  padding: 8px 15px;
-  background-color: #4caf50;
+  padding: 10px 20px;
+  background-color: #007bff;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 5px;
   cursor: pointer;
 }
 
 .dark-mode .filter-panel button,
 .dark-mode .mode-toggle,
 .dark-mode .export-button {
-  background-color: #45a049;
+  background-color: #0056b3;
+}
+
+.filter-panel button:hover,
+.mode-toggle:hover,
+.export-button:hover {
+  background-color: #0056b3;
 }
 
 .search-container,
@@ -101,12 +109,13 @@ h2 {
 .chart {
   margin-bottom: 30px;
   padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 5px;
+  background-color: #fff;
+  border-radius: 10px;
   min-height: 300px;
   display: flex;
   justify-content: center;
   align-items: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .dark-mode .chart {
@@ -134,39 +143,47 @@ h2 {
 .analysis-results table {
   width: 100%;
   border-collapse: collapse;
+  margin-top: 20px;
 }
 
 .comparison-view th,
 .comparison-view td,
 .analysis-results th,
-.analysis-results td {
+.analysis-results td,
+.data-table th,
+.data-table td {
   border: 1px solid #ddd;
-  padding: 8px;
+  padding: 12px 15px;
   text-align: left;
 }
 
 .dark-mode .comparison-view th,
 .dark-mode .comparison-view td,
 .dark-mode .analysis-results th,
-.dark-mode .analysis-results td {
+.dark-mode .analysis-results td,
+.dark-mode .data-table th,
+.dark-mode .data-table td {
   border-color: #666;
 }
 
 .comparison-view th,
-.analysis-results th {
+.analysis-results th,
+.data-table th {
   background-color: #f2f2f2;
 }
 
 .dark-mode .comparison-view th,
-.dark-mode .analysis-results th {
+.dark-mode .analysis-results th,
+.dark-mode .data-table th {
   background-color: #555;
 }
 
 .no-data-message {
   text-align: center;
-  color: #666;
+  color: #888;
   font-style: italic;
   margin-top: 20px;
+  font-size: 1.1em;
 }
 
 .dark-mode .no-data-message {
@@ -177,7 +194,39 @@ h2 {
 .error-message {
   text-align: center;
   padding: 20px;
-  font-size: 18px;
+  font-size: 1.2em;
+  color: red;
+}
+
+.vehicle-item {
+  background-color: #f8f8f8;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dark-mode .vehicle-item {
+  background-color: #444;
+}
+
+.vehicle-item p {
+  margin: 0;
+}
+
+.vehicle-item button {
+  padding: 8px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.vehicle-item button:hover {
+  background-color: #0056b3;
 }
 
 @media (max-width: 768px) {
@@ -197,5 +246,14 @@ h2 {
   .chart,
   .chart-section {
     width: 100%;
+  }
+
+  .vehicle-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .vehicle-item button {
+    margin-top: 10px;
   }
 }

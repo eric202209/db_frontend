@@ -3,6 +3,7 @@ import axios from 'axios';
 import FilterPanel from './FilterPanel'; 
 import ComparisonView from './ComparisonView'; 
 import AnalysisResults from './AnalysisResults';
+import DataTable from './DataTable';
 
 const Dashboard = () => {
     const [filteredData, setFilteredData] = useState([]);
@@ -52,14 +53,11 @@ const Dashboard = () => {
             <FilterPanel onFilterChange={handleFilterChange} />
             <div className="filtered-results">
                 <h2>Filtered Results</h2>
-                {filteredData.map((vehicle) => (
-                    <div key={vehicle.id} className="vehicle-item">
-                        <p>{`${vehicle.modelYear} ${vehicle.make} ${vehicle.model}`}</p>
-                        <button onClick={() => handleComparisonToggle(vehicle)}>
-                            {comparisonItems.some(i => i.id === vehicle.id) ? 'Remove from Comparison' : 'Add to Comparison'}
-                        </button>
-                    </div>
-                ))}
+                {filteredData.length > 0 ? (
+                    <DataTable data={filteredData} onComparisonToggle={handleComparisonToggle} />
+                ) : (
+                    <p className="no-data-message">No vehicles match the current filters.</p>
+                )}
             </div>
             {comparisonItems.length > 0 && <ComparisonView items={comparisonItems} />}
             <AnalysisResults data={analysisData} />

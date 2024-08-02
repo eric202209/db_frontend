@@ -15,7 +15,6 @@ const App = () => {
     const [selectedChart, setSelectedChart] = useState('avgConsMake');
     const [comparisonItems, setComparisonItems] = useState([]);
     const [isDarkMode, setIsDarkMode] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
     const [options, setOptions] = useState({});
 
     const chartTitles = {
@@ -105,14 +104,6 @@ const App = () => {
                 </button>
                 <Suspense fallback={<div className="loading">Loading...</div>}>
                     <FilterPanel onFilterChange={handleFilterChange} options={options} />
-                    <div className="search-container">
-                        <input
-                            type="text"
-                            placeholder="Search..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
                     <div className="chart-selector">
                         <select onChange={(e) => setSelectedChart(e.target.value)} value={selectedChart}>
                             {Object.entries(chartTitles).map(([key, value]) => (
