@@ -12,7 +12,7 @@ const App = () => {
     const [data, setData] = useState({});
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [selectedChart, setSelectedChart] = useState('avgConsMake');
+    const [selectedCharts, setSelectedCharts] = useState([]); 
     const [comparisonItems, setComparisonItems] = useState([]);
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [options, setOptions] = useState({});
@@ -67,21 +67,29 @@ const App = () => {
     };
 
     const handleComparisonToggle = (item) => {
-        setComparisonItems(prevItems =>
-            prevItems.includes(item)
-                ? prevItems.filter(i => i !== item)
-                : [...prevItems, item]
-        );
+        setComparisonItems(prevItems => {
+            const itemExists = prevItems.some(i => i.id === item.id);
+            if (itemExists) {
+                return prevItems.filter(i => i.id !== item.id);
+            } else if (prevItems.length < 3) {
+                return [...prevItems, item];
+            }
+            return prevItems;
+        });
     };
 
     const exportToCSV = () => {
-        if (!data[selectedChart]) return;
+        if (selectedCharts.length === 0) return;
 
-        const csvContent = "data:text/csv;charset=utf-8,"
-            + data[selectedChart].map(row => Object.values(row).join(",")).join("\n");
-        const encodedUri = encodeURI(csvContent);
+        const csvContent = selectedCharts.map(chartType => {
+            if (!data[chartType]) return '';
+            return `\n\n${chartTitles[chartType]}\n`
+                + data[chartType].map(row => Object.values(row).join(",")).join("\n");
+        }).join("\n");
+
+        const csvData = "data:text/csv;charset=utf-8," + encodeURI(csvContent);
         const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
+        link.setAttribute("href", csvData);
         link.setAttribute("download", "fuel_consumption_data.csv");
         document.body.appendChild(link);
         link.click();
@@ -106,22 +114,29 @@ const App = () => {
                 <Suspense fallback={<div className="loading">Loading...</div>}>
                     <FilterPanel onFilterChange={handleFilterChange} options={options.vehicleOptions || []} />
                     <div className="chart-selector">
-                        <select onChange={(e) => setSelectedChart(e.target.value)} value={selectedChart}>
+                        <select multiple onChange={(e) => {
+                            const options = Array.from(e.target.selectedOptions, option => option.value);
+                            setSelectedCharts(options);
+                        }} value={selectedCharts}>
                             {Object.entries(chartTitles).map(([key, value]) => (
                                 <option key={key} value={key}>{value}</option>
                             ))}
                         </select>
                     </div>
-                    <div className="chart">
-                        {Array.isArray(data[selectedChart]) && data[selectedChart].length > 0 ? (
-                            <Chart data={data[selectedChart]} title={chartTitles[selectedChart]} type={selectedChart} />
+                    <div className="charts">
+                        {selectedCharts.length > 0 ? (
+                            selectedCharts.map(chartType => (
+                                <div key={chartType} className="chart-section">
+                                    <h2>{chartTitles[chartType]}</h2>
+                                    {Array.isArray(data[chartType]) && data[chartType].length > 0 ? (
+                                        <Chart data={data[chartType]} title={chartTitles[chartType]} type={chartType} />
+                                    ) : (
+                                        <div className="no-data-message">No data available for {chartTitles[chartType]}.</div>
+                                    )}
+                                </div>
+                            ))
                         ) : (
-                            <div className="no-data-message">No data available for the selected chart.</div>
-                        )}
-                        {data.filteredVehicles && data.filteredVehicles.length > 0 ? (
-                            <Chart data={data.filteredVehicles} title="Filtered Vehicles" />
-                        ) : (
-                            <div className="no-data-message">No data available for the selected filters.</div>
+                            <div className="no-data-message">No charts selected.</div>
                         )}
                     </div>
                     <div className="data-tables">

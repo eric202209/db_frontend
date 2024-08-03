@@ -11,9 +11,12 @@ const FilterPanel = ({ onFilterChange }) => {
                 const response = await axios.get('/api/vehicle-options', {
                     responseType: 'json'
                 });
-                console.log('API Response:', response.data); // Add this line for debugging
 
-                if (Array.isArray(response.data)) {
+                // Log the response for debugging
+                console.log('API response:', response);
+
+                // Check if the response is as expected
+                if (response.data && Array.isArray(response.data)) {
                     setVehicleOptions(response.data);
                 } else {
                     console.error('Unexpected API response:', response.data);
@@ -38,8 +41,15 @@ const FilterPanel = ({ onFilterChange }) => {
         setSelectedVehicles(selectedVehicles.filter(v => v !== vehicle));
     };
 
-    const handleCompare = () => {
-        onFilterChange(selectedVehicles);
+    const handleCompare = async () => {
+        try {
+          const response = await axios.get('/api/filtered-data', {
+            params: { vehicles: JSON.stringify(selectedVehicles) }
+          });
+          onFilterChange(response.data);
+        } catch (err) {
+          console.error('Failed to apply filters:', err);
+        }
     };
 
     const resetFilters = () => {

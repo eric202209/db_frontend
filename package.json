@@ -8,6 +8,7 @@
     "@emotion/styled": "^11.13.0",
     "@mui/material": "^5.16.4",
     "axios": "^1.7.2",
+    "bootstrap": "^5.3.3",
     "chart.js": "^4.4.3",
     "chartjs-plugin-zoom": "^2.0.1",
     "concurrently": "^8.2.2",
@@ -19,6 +20,7 @@
     "nodemon": "^3.1.4",
     "oracledb": "^6.5.1",
     "react": "^17.0.2",
+    "react-bootstrap": "^2.10.4",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^17.0.2"
   },

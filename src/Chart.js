@@ -14,27 +14,28 @@ ChartJS.register(
   Legend
 );
 
+const getColors = (count) => {
+  const colors = [
+    'rgba(75,192,192,0.6)', 'rgba(255,99,132,0.6)', 'rgba(255,206,86,0.6)',
+    'rgba(54,162,235,0.6)', 'rgba(153,102,255,0.6)', 'rgba(255,159,64,0.6)'
+  ];
+  return Array(count).fill().map((_, i) => colors[i % colors.length]);
+};
+
 const Chart = ({ data, type, title }) => {
   if (!data || !Array.isArray(data) || data.length === 0) {
     return <div>No data available for this chart.</div>;
   }
 
-  // Ensure data has the expected structure
-  if (!data[0].hasOwnProperty('label') || !data[0].hasOwnProperty('value')) {
-    console.error('Invalid data format for chart:', data);
+  // Enhanced data validation
+  const isValidData = data.every(item => item.hasOwnProperty('label') && item.hasOwnProperty('value'));
+
+  if (!isValidData) {
     return <div>Error: Invalid data format for chart.</div>;
   }
-  
+
   const labels = data.map(item => item.label);
   const values = data.map(item => item.value);
-
-  const getColors = (count) => {
-    const colors = [
-      'rgba(75,192,192,0.6)', 'rgba(255,99,132,0.6)', 'rgba(255,206,86,0.6)',
-      'rgba(54,162,235,0.6)', 'rgba(153,102,255,0.6)', 'rgba(255,159,64,0.6)'
-    ];
-    return Array(count).fill().map((_, i) => colors[i % colors.length]);
-  };
 
   const chartData = {
     labels: labels,
