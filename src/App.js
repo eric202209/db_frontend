@@ -47,7 +47,8 @@ const App = () => {
         const fetchOptions = async () => {
             try {
                 const response = await axios.get('/api/vehicle-options');
-                setOptions({ vehicleOptions: response.data });
+                // setOptions({ vehicleOptions: response.data });
+                setOptions(response.data);
             } catch (error) {
                 setError('Failed to load filter options');
             }
@@ -154,9 +155,14 @@ const App = () => {
                             </div>
                         ))}
                     </div>
-                    {comparisonItems.length > 0 && <ComparisonView items={comparisonItems} />}
-                    <AnalysisResults data={data} />
-                    <button className="export-button" onClick={exportToCSV}>Export to CSV</button>
+                    <div className="comparison-view">
+                        <h2>Comparison View</h2>
+                        {comparisonItems.length > 0 && <ComparisonView items={comparisonItems} />}
+                    </div>
+                    <div className="analysis-results">
+                        <AnalysisResults data={data} />
+                    </div>
+                    <button className="export-button" onClick={exportToCSV}>Export Data to CSV</button>
                 </Suspense>
             </div>
         </div>

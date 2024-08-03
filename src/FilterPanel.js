@@ -8,14 +8,9 @@ const FilterPanel = ({ onFilterChange }) => {
     useEffect(() => {
         const fetchOptions = async () => {
             try {
-                const response = await axios.get('/api/vehicle-options', {
-                    responseType: 'json'
-                });
-
-                // Log the response for debugging
+                const response = await axios.get('/api/vehicle-options');
                 console.log('API response:', response);
-
-                // Check if the response is as expected
+    
                 if (response.data && Array.isArray(response.data)) {
                     setVehicleOptions(response.data);
                 } else {
@@ -23,12 +18,28 @@ const FilterPanel = ({ onFilterChange }) => {
                     setVehicleOptions([]);
                 }
             } catch (error) {
-                console.error('Error fetching vehicle options:', error.response ? error.response.data : error.message);
+                console.error('Error fetching vehicle options:', error);
                 setVehicleOptions([]);
             }
         };
         fetchOptions();
     }, []);
+
+    const handleCompare = async () => {
+        if (selectedVehicles.length === 0) {
+            console.log('No vehicles selected');
+            return;
+        }
+        try {
+            const response = await axios.get('/api/filtered-data', {
+                params: { vehicles: JSON.stringify(selectedVehicles) }
+            });
+            console.log('Filtered data response:', response.data);
+            onFilterChange(response.data);
+        } catch (err) {
+            console.error('Failed to apply filters:', err);
+        }
+    };
 
     const handleVehicleSelect = (e) => {
         const selectedVehicle = e.target.value;
@@ -39,17 +50,6 @@ const FilterPanel = ({ onFilterChange }) => {
 
     const handleRemoveVehicle = (vehicle) => {
         setSelectedVehicles(selectedVehicles.filter(v => v !== vehicle));
-    };
-
-    const handleCompare = async () => {
-        try {
-          const response = await axios.get('/api/filtered-data', {
-            params: { vehicles: JSON.stringify(selectedVehicles) }
-          });
-          onFilterChange(response.data);
-        } catch (err) {
-          console.error('Failed to apply filters:', err);
-        }
     };
 
     const resetFilters = () => {

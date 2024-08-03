@@ -29,50 +29,63 @@ async function initialize() {
     }
 }
 
-// API Routes
-app.get('/api/filtered-data', async (req, res) => {
+// Helper function to fetch filtered data
+async function fetchFilteredData(vehicles) {
     let connection;
     try {
         connection = await oracledb.getConnection();
-        const vehicles = req.query.vehicles ? JSON.parse(req.query.vehicles) : [];
 
-        if (vehicles.length === 0) {
-            return res.json([]);
-        }
+        // Create a list of bind variables
+        const binds = vehicles.reduce((acc, vehicle, index) => {
+            acc[`vehicle${index}`] = vehicle;
+            return acc;
+        }, {});
 
-        // Use placeholders for bind variables
-        const placeholders = vehicles.map((_, index) => `:vehicle${index}`).join(', ');
+        // Create the IN clause with named bind variables
+        const vehicleList = vehicles.map((_, index) => `:vehicle${index}`).join(', ');
         const query = `
             SELECT model_year, make, model, vehicle_class, engine_size, cylinders,
-                transmission, fuel_type, city_consumption, highway_consumption,
-                combined_consumption, combined_mpg, co2_emissions, co2_rating, smog_rating
+                   transmission, fuel_type, city_consumption, highway_consumption,
+                   combined_consumption, combined_mpg, co2_emissions, co2_rating, smog_rating
             FROM fuel_consumption_ratings
-            WHERE MODEL_YEAR || ' ' || MAKE || ' ' || MODEL || ' ' || VEHICLE_CLASS IN (${placeholders})
+            WHERE model_year || ' ' || make || ' ' || model || ' ' || vehicle_class IN (${vehicleList})
         `;
 
-        // Bind parameters as an array
-        const bindParams = {};
-        vehicles.forEach((vehicle, index) => {
-            bindParams[`vehicle${index}`] = vehicle;
-        });
+        console.log('Executing query:', query);
+        console.log('With parameters:', binds);
 
-        // Execute the query with bind parameters
-        const result = await connection.execute(query, bindParams, { outFormat: oracledb.OUT_FORMAT_OBJECT });
-        res.json(result.rows);
+        const result = await connection.execute(query, binds);
+        return result.rows;
     } catch (err) {
         console.error('Error fetching filtered data:', err);
-        res.status(500).json({ error: 'An error occurred while fetching data' });
+        throw err;
     } finally {
         if (connection) {
             try {
                 await connection.close();
             } catch (err) {
-                console.error('Error closing connection', err);
+                console.error('Error closing connection:', err);
             }
         }
     }
+}
+
+// API Routes
+// API endpoint to get filtered data
+app.get('/api/filtered-data', async (req, res) => {
+    try {
+        const { vehicles } = req.query;
+        const selectedVehicles = JSON.parse(vehicles);
+        const data = await fetchFilteredData(selectedVehicles);
+        res.json(data);
+    } catch (err) {
+        console.error('Failed to apply filters:', err);
+        res.status(500).send('Failed to fetch filtered data');
+    }
 });
 
+
+// API routes
 app.get('/api/vehicle-options', async (req, res) => {
     let connection;
     try {
@@ -177,6 +190,7 @@ app.get('*.css', (req, res, next) => {
     next();
 });
 
+// Catch-all route
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
