@@ -35,26 +35,23 @@ async function fetchFilteredData(vehicles) {
     try {
         connection = await oracledb.getConnection();
 
-        // Create a list of bind variables
-        const binds = vehicles.reduce((acc, vehicle, index) => {
-            acc[`vehicle${index}`] = vehicle;
-            return acc;
-        }, {});
-
-        // Create the IN clause with named bind variables
-        const vehicleList = vehicles.map((_, index) => `:vehicle${index}`).join(', ');
+        // Create placeholders for each vehicle
+        const vehiclePlaceholders = vehicles.map((_, index) => `:vehicle${index + 1}`).join(', ');
         const query = `
             SELECT model_year, make, model, vehicle_class, engine_size, cylinders,
                    transmission, fuel_type, city_consumption, highway_consumption,
                    combined_consumption, combined_mpg, co2_emissions, co2_rating, smog_rating
             FROM fuel_consumption_ratings
-            WHERE model_year || ' ' || make || ' ' || model || ' ' || vehicle_class IN (${vehicleList})
+            WHERE model_year || ' ' || make || ' ' || model || ' ' || vehicle_class || ' ' || transmission || ' ' || fuel_type IN (${vehiclePlaceholders})
         `;
 
-        console.log('Executing query:', query);
-        console.log('With parameters:', binds);
+        // Flatten the vehicles into a list for binding
+        const bindValues = vehicles;
 
-        const result = await connection.execute(query, binds);
+        console.log('Executing query:', query);
+        console.log('With parameters:', bindValues);
+
+        const result = await connection.execute(query, bindValues);
         return result.rows;
     } catch (err) {
         console.error('Error fetching filtered data:', err);
@@ -92,11 +89,12 @@ app.get('/api/vehicle-options', async (req, res) => {
         connection = await oracledb.getConnection();
 
         const query = `
-            SELECT DISTINCT MODEL_YEAR, MAKE, MODEL, VEHICLE_CLASS,
-                   MODEL_YEAR || ' ' || MAKE || ' ' || MODEL || ' ' || VEHICLE_CLASS AS vehicle_option
+            SELECT DISTINCT MODEL_YEAR, MAKE, MODEL, VEHICLE_CLASS, TRANSMISSION, FUEL_TYPE,
+                   MODEL_YEAR || ' ' || MAKE || ' ' || MODEL || ' ' || VEHICLE_CLASS || ' ' || TRANSMISSION || ' ' || FUEL_TYPE AS vehicle_option
             FROM fuel_consumption_ratings
-            ORDER BY MODEL_YEAR DESC, MAKE, MODEL, VEHICLE_CLASS
+            ORDER BY MODEL_YEAR DESC, MAKE, MODEL, VEHICLE_CLASS, TRANSMISSION, FUEL_TYPE
         `;
+        
         const result = await connection.execute(query, [], { outFormat: oracledb.OUT_FORMAT_OBJECT });
 
         const vehicleOptions = result.rows.map(row => row.VEHICLE_OPTION);
