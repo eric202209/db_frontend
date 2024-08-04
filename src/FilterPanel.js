@@ -4,6 +4,7 @@ import axios from 'axios';
 const FilterPanel = ({ onFilterChange }) => {
     const [selectedVehicles, setSelectedVehicles] = useState([]);
     const [vehicleOptions, setVehicleOptions] = useState([]);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchOptions = async () => {
@@ -28,6 +29,7 @@ const FilterPanel = ({ onFilterChange }) => {
     const handleCompare = async () => {
         if (selectedVehicles.length === 0) {
             console.log('No vehicles selected');
+            setError('No vehicles selected. Please select at least one vehicle.');
             return;
         }
         try {
@@ -36,8 +38,10 @@ const FilterPanel = ({ onFilterChange }) => {
             });
             console.log('Filtered data response:', response.data);
             onFilterChange(response.data);
+            setError(null); // Clear any existing error message on successful fetch
         } catch (err) {
             console.error('Failed to apply filters:', err);
+            setError('Failed to apply filters. Please try again.');
         }
     };
 
@@ -54,6 +58,7 @@ const FilterPanel = ({ onFilterChange }) => {
 
     const resetFilters = () => {
         setSelectedVehicles([]);
+        setError(null); // Clear any existing error message
         onFilterChange([]);
     };
 
@@ -2657,6 +2662,7 @@ const FilterPanel = ({ onFilterChange }) => {
                         </li>
                     ))}
                 </ul>
+                {error && <div className="error-message">{error}</div>}
                 <button type="button" className="compare-button" onClick={handleCompare} disabled={selectedVehicles.length < 2}>
                     Compare 
                 </button>

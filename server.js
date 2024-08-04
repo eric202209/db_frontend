@@ -67,12 +67,16 @@ async function fetchFilteredData(vehicles) {
     }
 }
 
-// API Routes
 // API endpoint to get filtered data
 app.get('/api/filtered-data', async (req, res) => {
     try {
         const { vehicles } = req.query;
         const selectedVehicles = JSON.parse(vehicles);
+
+        if (selectedVehicles.length === 0) {
+            return res.status(400).send('No vehicles selected');
+        }
+
         const data = await fetchFilteredData(selectedVehicles);
         res.json(data);
     } catch (err) {
@@ -80,7 +84,6 @@ app.get('/api/filtered-data', async (req, res) => {
         res.status(500).send('Failed to fetch filtered data');
     }
 });
-
 
 // API routes
 app.get('/api/vehicle-options', async (req, res) => {

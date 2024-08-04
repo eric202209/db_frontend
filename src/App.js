@@ -57,6 +57,11 @@ const App = () => {
     }, []);
 
     const handleFilterChange = async (selectedVehicles) => {
+        if (selectedVehicles.length === 0) {
+            setError('No vehicles selected. Please select at least one vehicle.');
+            return;
+        }
+        
         try {
             const response = await axios.get('/api/filtered-data', {
                 params: { vehicles: JSON.stringify(selectedVehicles) }
