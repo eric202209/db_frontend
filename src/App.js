@@ -128,7 +128,7 @@ const App = () => {
                         {selectedCharts.length > 0 ? (
                             selectedCharts.map(chartType => (
                                 <div key={chartType} className="chart-section">
-                                    <h2>{chartTitles[chartType]}</h2>
+                                    <h2 class="centered-title">{chartTitles[chartType]}</h2>
                                     {Array.isArray(data[chartType]) && data[chartType].length > 0 ? (
                                         <Chart data={data[chartType]} title={chartTitles[chartType]} type={chartType} />
                                     ) : (
@@ -140,10 +140,10 @@ const App = () => {
                             <div className="no-data-message">No charts selected.</div>
                         )}
                     </div>
-                    <div className="data-tables">
+                    <div className="data-table">
                         {Object.keys(chartTitles).map(key => (
                             <div className={`chart-section ${key}`} key={key}>
-                                <h2>{chartTitles[key]}</h2>
+                                <h2 class="centered-title">{chartTitles[key]}</h2>
                                 {data[key] && data[key].length > 0 ? (
                                     <DataTable
                                         data={data[key]}

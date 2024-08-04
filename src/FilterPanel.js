@@ -2647,22 +2647,22 @@ const FilterPanel = ({ onFilterChange }) => {
                 ))}
             </select>
             
-            <div>
+            <div className="selected-vehicles">
                 <h3>Selected Vehicles:</h3>
                 <ul>
                     {selectedVehicles.map((vehicle, index) => (
-                        <li key={index}>
+                        <li key={index} className="selected-vehicle-item">
                             {vehicle}
-                            <button type="button" onClick={() => handleRemoveVehicle(vehicle)}>Remove</button>
+                            <button type="button" className="remove-vehicle-button" onClick={() => handleRemoveVehicle(vehicle)}>Remove</button>
                         </li>
                     ))}
                 </ul>
-                <button type="button" onClick={handleCompare} disabled={selectedVehicles.length < 2}>
+                <button type="button" className="compare-button" onClick={handleCompare} disabled={selectedVehicles.length < 2}>
                     Compare 
                 </button>
             </div>
                 
-            <button type="button" onClick={resetFilters}>Reset</button>
+            <button type="button" className="reset-button" onClick={resetFilters}>Reset</button>
         </div>
     );
 };
