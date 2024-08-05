@@ -31,12 +31,8 @@ body {
 h1,
 h2 {
   color: #333;
-  text-align: center;
   margin-bottom: 20px;
   font-size: 2.5em;
-}
-
-h2.centered-title {
   text-align: center;
 }
 
@@ -148,7 +144,7 @@ h2.centered-title {
 
 .chart-section h2 {
   color: #333;
-  text-align: left;
+  text-align: center;
   margin-bottom: 20px;
   font-size: 1.8em;
 }
@@ -162,7 +158,7 @@ h2.centered-title {
 .data-table th,
 .data-table td {
   padding: 12px 15px;
-  text-align: left;
+  text-align: center;
   border-bottom: 1px solid #e0e0e0;
 }
 
@@ -195,7 +191,7 @@ h2.centered-title {
 .analysis-results {
   border: 1px solid #ddd;
   padding: 12px 15px;
-  text-align: left;
+  text-align: center;
   margin-top: 20px;
   overflow-x: auto;
 }
