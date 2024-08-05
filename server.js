@@ -34,25 +34,47 @@ async function fetchFilteredData(vehicles) {
     let connection;
     try {
         connection = await oracledb.getConnection();
-
-        // Create placeholders for each vehicle
-        const vehiclePlaceholders = vehicles.map((_, index) => `:vehicle${index + 1}`).join(', ');
         const query = `
             SELECT model_year, make, model, vehicle_class, engine_size, cylinders,
-                   transmission, fuel_type, city_consumption, highway_consumption,
-                   combined_consumption, combined_mpg, co2_emissions, co2_rating, smog_rating
+                transmission, fuel_type, city_consumption, highway_consumption,
+                combined_consumption, combined_mpg, co2_emissions, co2_rating, smog_rating
             FROM fuel_consumption_ratings
-            WHERE model_year || ' ' || make || ' ' || model || ' ' || vehicle_class || ' ' || transmission || ' ' || fuel_type IN (${vehiclePlaceholders})
+            WHERE (model_year = :year AND make = :make AND model = :model AND
+                vehicle_class = :class AND transmission = :transmission AND fuel_type = :fuel)
         `;
-
-        // Flatten the vehicles into a list for binding
-        const bindValues = vehicles;
-
-        console.log('Executing query:', query);
-        console.log('With parameters:', bindValues);
-
-        const result = await connection.execute(query, bindValues);
-        return result.rows;
+        console.log('Received vehicles:', vehicles);
+        const results = await Promise.all(vehicles.map(async (vehicle, index) => {
+            let bindParams;
+            if (typeof vehicle === 'string') {
+                const parts = vehicle.split(' ');
+                bindParams = {
+                    year: parseInt(parts[0]),
+                    make: parts[1],
+                    model: parts.slice(2, -3).join(' '),
+                    class: parts[parts.length - 3],
+                    transmission: parts[parts.length - 2],
+                    fuel: parts[parts.length - 1]
+                };
+            } else {
+                bindParams = {
+                    year: vehicle.MODEL_YEAR,
+                    make: vehicle.MAKE,
+                    model: vehicle.MODEL,
+                    class: vehicle.VEHICLE_CLASS,
+                    transmission: vehicle.TRANSMISSION,
+                    fuel: vehicle.FUEL_TYPE
+                };
+            }
+       
+            console.log(`Executing query for vehicle ${index + 1}:`, query);
+            console.log(`Parameters for vehicle ${index + 1}:`, bindParams);
+            const result = await connection.execute(query, bindParams, { outFormat: oracledb.OUT_FORMAT_OBJECT });
+            console.log(`Result for vehicle ${index + 1}:`, result.rows);
+            return result.rows;
+        }));
+        const flatResults = results.flat();
+        console.log('Final results:', flatResults);
+        return flatResults;
     } catch (err) {
         console.error('Error fetching filtered data:', err);
         throw err;
@@ -71,13 +93,16 @@ async function fetchFilteredData(vehicles) {
 app.get('/api/filtered-data', async (req, res) => {
     try {
         const { vehicles } = req.query;
+        console.log('Received vehicles query:', vehicles);
         const selectedVehicles = JSON.parse(vehicles);
+        console.log('Parsed selected vehicles:', selectedVehicles);
 
-        if (selectedVehicles.length === 0) {
-            return res.status(400).send('No vehicles selected');
+        if (!selectedVehicles || selectedVehicles.length === 0) {
+            return res.json([]); // Return an empty array instead of an error
         }
 
         const data = await fetchFilteredData(selectedVehicles);
+        console.log('Data to be sent:', data);
         res.json(data);
     } catch (err) {
         console.error('Failed to apply filters:', err);

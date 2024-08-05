@@ -32,13 +32,14 @@ const FilterPanel = ({ onFilterChange }) => {
             setError('No vehicles selected. Please select at least one vehicle.');
             return;
         }
+        console.log('Selected vehicles:', selectedVehicles);
         try {
             const response = await axios.get('/api/filtered-data', {
                 params: { vehicles: JSON.stringify(selectedVehicles) }
             });
             console.log('Filtered data response:', response.data);
             onFilterChange(response.data);
-            setError(null); // Clear any existing error message on successful fetch
+            setError(null);
         } catch (err) {
             console.error('Failed to apply filters:', err);
             setError('Failed to apply filters. Please try again.');
@@ -58,7 +59,7 @@ const FilterPanel = ({ onFilterChange }) => {
 
     const resetFilters = () => {
         setSelectedVehicles([]);
-        setError(null); // Clear any existing error message
+        setError(null);
         onFilterChange([]);
     };
 

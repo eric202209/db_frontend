@@ -47,7 +47,6 @@ const App = () => {
         const fetchOptions = async () => {
             try {
                 const response = await axios.get('/api/vehicle-options');
-                // setOptions({ vehicleOptions: response.data });
                 setOptions(response.data);
             } catch (error) {
                 setError('Failed to load filter options');
@@ -57,8 +56,9 @@ const App = () => {
     }, []);
 
     const handleFilterChange = async (selectedVehicles) => {
-        if (selectedVehicles.length === 0) {
-            setError('No vehicles selected. Please select at least one vehicle.');
+        if (!selectedVehicles || selectedVehicles.length === 0) {
+            setData(prevData => ({ ...prevData, filteredVehicles: [] }));
+            setError(null);
             return;
         }
         
@@ -66,17 +66,42 @@ const App = () => {
             const response = await axios.get('/api/filtered-data', {
                 params: { vehicles: JSON.stringify(selectedVehicles) }
             });
-            setData(prevData => ({ ...prevData, filteredVehicles: response.data }));
+            console.log('Filtered data response:', response.data);
+            setData(prevData => ({ ...prevData, 
+                filteredVehicles: response.data.filteredVehicles,
+                avgConsMake: response.data.avgConsMake,
+                co2ByClass: response.data.co2ByClass,
+                fuelTypeDist: response.data.fuelTypeDist,
+                bestSmog: response.data.bestSmog,
+                consByTrans: response.data.consByTrans,
+                co2RatingPct: response.data.co2RatingPct,
+                topLowCo2: response.data.topLowCo2,
+                topEfficient: response.data.topEfficient
+            }));
+            setError(null);
         } catch (err) {
+            console.error('Failed to apply filters:', err);
             setError('Failed to apply filters. Please try again.');
         }
     };
 
+    // const handleComparisonToggle = (item) => {
+    //     setComparisonItems(prevItems => {
+    //         const itemExists = prevItems.some(i => i.id === item.id);
+    //         if (itemExists) {
+    //             return prevItems.filter(i => i.id !== item.id);
+    //         } else if (prevItems.length < 3) {
+    //             return [...prevItems, item];
+    //         }
+    //         return prevItems;
+    //     });
+    // };
+
     const handleComparisonToggle = (item) => {
         setComparisonItems(prevItems => {
-            const itemExists = prevItems.some(i => i.id === item.id);
+            const itemExists = prevItems.some(i => i.MODEL === item.MODEL && i.MAKE === item.MAKE);
             if (itemExists) {
-                return prevItems.filter(i => i.id !== item.id);
+                return prevItems.filter(i => i.MODEL !== item.MODEL || i.MAKE !== item.MAKE);
             } else if (prevItems.length < 3) {
                 return [...prevItems, item];
             }

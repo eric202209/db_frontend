@@ -60,20 +60,29 @@ const AnalysisResults = ({ data }) => {
         return formattedData;
     };
 
+    if (!data || Object.keys(data).length === 0) {
+        return <div>No data available for analysis.</div>;
+    }
+
     return (
         <div className="analysis-results">
             <h2>Analysis Results</h2>
-            {chartConfigs.map(config => (
-                <div key={config.key} className="chart-section">
-                    <h3>{config.title}</h3>
-                    <Chart 
-                        data={formatChartData(data[config.key], config.key)}
-                        type={config.type}
-                        title={config.title}
-                    />
-                    <DataTable data={data[config.key]} />
-                </div>
-            ))}
+            {chartConfigs.map(config => {
+                if (!data[config.key] || data[config.key].length === 0) {
+                    return <div key={config.key}>No data available for {config.title}</div>;
+                }
+                return (
+                    <div key={config.key} className="chart-section">
+                        <h3>{config.title}</h3>
+                        <Chart
+                            data={formatChartData(data[config.key], config.key)}
+                            type={config.type}
+                            title={config.title}
+                        />
+                        <DataTable data={data[config.key]} />
+                    </div>
+                );
+            })}
         </div>
     );
 };
