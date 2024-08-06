@@ -122,7 +122,7 @@ const AnalysisResults = ({ data, comparisonData }) => {
                     ? formatChartData(comparisonData, config.key, true)
                     : formatChartData(data[config.key], config.key, false);
 
-                console.log(`Chart Config for ${config.key}:`, chartData);
+                // console.log(`Chart Config for ${config.key}:`, chartData);
 
                 if (chartData.length === 0) {
                     return <div key={config.key}>No data available for {config.title}</div>;

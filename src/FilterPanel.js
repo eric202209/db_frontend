@@ -10,7 +10,7 @@ const FilterPanel = ({ onFilterChange }) => {
         const fetchOptions = async () => {
             try {
                 const response = await axios.get('/api/vehicle-options');
-                console.log('API response:', response);
+                // console.log('API response:', response);
     
                 if (response.data && Array.isArray(response.data)) {
                     setVehicleOptions(response.data);
@@ -28,28 +28,17 @@ const FilterPanel = ({ onFilterChange }) => {
 
     const handleCompare = async () => {
         if (selectedVehicles.length === 0) {
-            console.log('No vehicles selected');
             setError('No vehicles selected. Please select at least one vehicle.');
             return;
         }
-        console.log('Selected vehicles:', selectedVehicles);
-        try {
-            const response = await axios.get('/api/filtered-data', {
-                params: { vehicles: JSON.stringify(selectedVehicles) }
-            });
-            console.log('Filtered data response:', response.data);
-            onFilterChange(response.data);
-            setError(null);
-        } catch (err) {
-            console.error('Failed to apply filters:', err);
-            setError('Failed to apply filters. Please try again.');
-        }
+        onFilterChange(selectedVehicles);
     };
 
     const handleVehicleSelect = (e) => {
         const selectedVehicle = e.target.value;
         if (selectedVehicle && !selectedVehicles.includes(selectedVehicle)) {
             setSelectedVehicles([...selectedVehicles, selectedVehicle]);
+            setError(null);
         }
     };
 
@@ -2664,7 +2653,7 @@ const FilterPanel = ({ onFilterChange }) => {
                     ))}
                 </ul>
                 {error && <div className="error-message">{error}</div>}
-                <button type="button" className="compare-button" onClick={handleCompare} disabled={selectedVehicles.length < 2}>
+                <button type="button" className="compare-button" onClick={handleCompare} disabled={selectedVehicles.length === 0}>
                     Compare 
                 </button>
             </div>

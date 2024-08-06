@@ -10,12 +10,12 @@ const AnalysisResults = React.lazy(() => import('./AnalysisResults'));
 
 const App = () => {
     const [data, setData] = useState({});
+    const [comparisonData, setComparisonData] = useState([]);
+    const [comparisonItems, setComparisonItems] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const [selectedCharts, setSelectedCharts] = useState([]); 
-    const [comparisonItems, setComparisonItems] = useState([]);
     const [isDarkMode, setIsDarkMode] = useState(false);
-    const [options, setOptions] = useState({});
 
     const chartTitles = {
         avgConsMake: 'Average Consumption',
@@ -43,21 +43,9 @@ const App = () => {
         fetchData();
     }, []);
 
-    useEffect(() => {
-        const fetchOptions = async () => {
-            try {
-                const response = await axios.get('/api/vehicle-options');
-                setOptions(response.data);
-            } catch (error) {
-                setError('Failed to load filter options');
-            }
-        };
-        fetchOptions();
-    }, []);
-
     const handleFilterChange = async (selectedVehicles) => {
         if (!selectedVehicles || selectedVehicles.length === 0) {
-            setData(prevData => ({ ...prevData, filteredVehicles: [] }));
+            setComparisonData([]);
             setError(null);
             return;
         }
@@ -67,17 +55,7 @@ const App = () => {
                 params: { vehicles: JSON.stringify(selectedVehicles) }
             });
             console.log('Filtered data response:', response.data);
-            setData(prevData => ({ ...prevData, 
-                filteredVehicles: response.data.filteredVehicles,
-                avgConsMake: response.data.avgConsMake,
-                co2ByClass: response.data.co2ByClass,
-                fuelTypeDist: response.data.fuelTypeDist,
-                bestSmog: response.data.bestSmog,
-                consByTrans: response.data.consByTrans,
-                co2RatingPct: response.data.co2RatingPct,
-                topLowCo2: response.data.topLowCo2,
-                topEfficient: response.data.topEfficient
-            }));
+            setComparisonData(response.data);
             setError(null);
         } catch (err) {
             console.error('Failed to apply filters:', err);
@@ -107,6 +85,29 @@ const App = () => {
             }
             return prevItems;
         });
+    };
+
+    const transformDataForChart = (data, chartType) => {
+        switch(chartType) {
+          case 'avgConsMake':
+            return data.map(item => ({ label: item.MAKE, value: item.FUEL_CONSUMPTION_CITY }));
+          case 'co2ByClass':
+            return data.map(item => ({ label: item.VEHICLE_CLASS, value: item.CO2_EMISSIONS }));
+          case 'fuelTypeDist':
+            return data.map(item => ({ label: item.FUEL_TYPE, value: 1 })); // Count of each fuel type
+          case 'bestSmog':
+            return data.map(item => ({ label: `${item.MAKE} ${item.MODEL}`, value: item.SMOG_RATING }));
+          case 'consByTrans':
+            return data.map(item => ({ label: item.TRANSMISSION, value: item.FUEL_CONSUMPTION_COMBINED }));
+          case 'co2RatingPct':
+            return data.map(item => ({ label: `${item.MAKE} ${item.MODEL}`, value: item.CO2_RATING }));
+          case 'topLowCo2':
+            return data.map(item => ({ label: `${item.MAKE} ${item.MODEL}`, value: item.CO2_EMISSIONS }));
+          case 'topEfficient':
+            return data.map(item => ({ label: `${item.MAKE} ${item.MODEL}`, value: item.FUEL_CONSUMPTION_COMBINED }));
+          default:
+            return [];
+        }
     };
 
     const exportToCSV = () => {
@@ -143,7 +144,7 @@ const App = () => {
                     Toggle {isDarkMode ? 'Light' : 'Dark'} Mode
                 </button>
                 <Suspense fallback={<div className="loading">Loading...</div>}>
-                    <FilterPanel onFilterChange={handleFilterChange} options={options.vehicleOptions || []} />
+                    <FilterPanel onFilterChange={handleFilterChange} />
                     <div className="chart-selector">
                         <select multiple onChange={(e) => {
                             const options = Array.from(e.target.selectedOptions, option => option.value);
@@ -157,14 +158,18 @@ const App = () => {
                     <div className="charts">
                         {selectedCharts.length > 0 ? (
                             selectedCharts.map(chartType => (
-                                <div key={chartType} className="chart-section">
-                                    <h2>{chartTitles[chartType]}</h2>
-                                    {Array.isArray(data[chartType]) && data[chartType].length > 0 ? (
-                                        <Chart data={data[chartType]} title={chartTitles[chartType]} type={chartType} />
-                                    ) : (
-                                        <div className="no-data-message">No data available for {chartTitles[chartType]}.</div>
-                                    )}
-                                </div>
+                            <div key={chartType} className="chart-section">
+                                <h2>{chartTitles[chartType]}</h2>
+                                {comparisonData.length > 0 ? (
+                                <Chart 
+                                    data={transformDataForChart(comparisonData, chartType)} 
+                                    title={chartTitles[chartType]} 
+                                    type={chartType} 
+                                />
+                                ) : (
+                                <div className="no-data-message">No data available for {chartTitles[chartType]}.</div>
+                                )}
+                            </div>
                             ))
                         ) : (
                             <div className="no-data-message">No charts selected.</div>
@@ -173,24 +178,24 @@ const App = () => {
                     <div className="data-table">
                         {Object.keys(chartTitles).map(key => (
                             <div className={`chart-section ${key}`} key={key}>
-                                <h2>{chartTitles[key]}</h2>
-                                {data[key] && data[key].length > 0 ? (
-                                    <DataTable
-                                        data={data[key]}
-                                        onComparisonToggle={handleComparisonToggle}
-                                    />
-                                ) : (
-                                    <p className="no-data-message">No data available for {chartTitles[key]}.</p>
-                                )}
+                            <h2>{chartTitles[key]}</h2>
+                            {comparisonData.length > 0 ? (
+                                <DataTable
+                                data={transformDataForChart(comparisonData, key)}
+                                onComparisonToggle={handleComparisonToggle}
+                                />
+                            ) : (
+                                <p className="no-data-message">No data available for {chartTitles[key]}.</p>
+                            )}
                             </div>
                         ))}
                     </div>
                     <div className="comparison-view">
-                        <h2>Comparison View</h2>
-                        {comparisonItems.length > 0 && <ComparisonView items={comparisonItems} />}
+                        <h2>Comparison View</h2>\                        
+                        <ComparisonView items={comparisonData} />
                     </div>
                     <div className="analysis-results">
-                        <AnalysisResults data={data} />
+                        <AnalysisResults data={data} comparisonData={comparisonData}/>
                     </div>
                     <button className="export-button" onClick={exportToCSV}>Export Data to CSV</button>
                 </Suspense>
