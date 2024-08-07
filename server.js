@@ -184,27 +184,16 @@ app.get('/api/data', async (req, res) => {
     }
 });
 
-app.use((req, res, next) => {
-    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-    next();
-});
-
-app.use((req, res, next) => {
-    res.setHeader('Content-Type', 'application/json');
-    next();
-});
-
-app.use(
-    helmet.contentSecurityPolicy({
-        directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-            styleSrc: ["'self'", "'unsafe-inline'"],
-            imgSrc: ["'self'", "data:", "blob:"],
-            scriptSrcElem: ["'self'", "http://ff.kis.v2.scr.kaspersky-labs.com", "ws://ff.kis.v2.scr.kaspersky-labs.com"],
-        },
-    })
-);
+// Security headers with helmet
+app.use(helmet.contentSecurityPolicy({
+    directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "blob:"],
+        scriptSrcElem: ["'self'", "http://ff.kis.v2.scr.kaspersky-labs.com", "ws://ff.kis.v2.scr.kaspersky-labs.com"],
+    },
+}));
 
 app.get('*.js', (req, res, next) => {
     res.type('application/javascript');
@@ -216,7 +205,7 @@ app.get('*.css', (req, res, next) => {
     next();
 });
 
-// Catch-all route
+// Catch-all route for React app
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });

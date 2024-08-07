@@ -2,13 +2,13 @@ import React from 'react';
 import { Table } from 'react-bootstrap';
 
 const ComparisonView = ({ items }) => {
-  if (items.length === 0) return null;
+  if (!items || items.length === 0) return <p>No items selected for comparison.</p>;
 
-  const comparisonFields = [
-    'engine_size', 'cylinders', 'transmission', 'fuel_type', 'city_consumption',
-    'highway_consumption', 'combined_consumption', 'combined_mpg', 'co2_emissions',
-    'co2_rating', 'smog_rating'
-  ];
+  // Log the items to inspect their structure
+  console.log('Comparison items:', items);
+
+  // Dynamically get all keys from the first item
+  const allKeys = Object.keys(items[0] || {});
 
   return (
     <div className="comparison-view">
@@ -18,16 +18,20 @@ const ComparisonView = ({ items }) => {
           <tr>
             <th>Attribute</th>
             {items.map((item, index) => (
-              <th key={index}>{`${item.model_year} ${item.make} ${item.model}`}</th>
+              <th key={index}>
+                {`${item.MODEL_YEAR || item.model_year || 'Unknown Year'} 
+                  ${item.MAKE || item.make || 'Unknown Make'} 
+                  ${item.MODEL || item.model || 'Unknown Model'}`}
+              </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {comparisonFields.map(field => (
-            <tr key={field}>
-              <td>{field.replace('_', ' ').toUpperCase()}</td>
+          {allKeys.map(key => (
+            <tr key={key}>
+              <td>{key.replace(/_/g, ' ')}</td>
               {items.map((item, index) => (
-                <td key={index}>{item[field]}</td>
+                <td key={index}>{item[key] != null ? item[key].toString() : 'N/A'}</td>
               ))}
             </tr>
           ))}

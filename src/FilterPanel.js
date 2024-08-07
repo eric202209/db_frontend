@@ -10,7 +10,8 @@ const FilterPanel = ({ onFilterChange }) => {
         const fetchOptions = async () => {
             try {
                 const response = await axios.get('/api/vehicle-options');
-                // console.log('API response:', response);
+                // Log the entire response for debugging
+                console.log('API response:', response);
     
                 if (response.data && Array.isArray(response.data)) {
                     setVehicleOptions(response.data);

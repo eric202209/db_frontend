@@ -54,32 +54,39 @@ const App = () => {
             const response = await axios.get('/api/filtered-data', {
                 params: { vehicles: JSON.stringify(selectedVehicles) }
             });
-            console.log('Filtered data response:', response.data);
-            setComparisonData(response.data);
-            setError(null);
+
+            // Log the response for debugging
+            console.log('API response:', response);
+
+            // Check if the response is JSON
+            try {
+                if (typeof response.data === 'string') {
+                    response.data = JSON.parse(response.data);
+                }
+            } catch (e) {
+                console.error('Error parsing JSON:', e);
+                throw new Error('Invalid JSON format');
+            }
+            
+            // Check if the response is an array
+            if (Array.isArray(response.data)) {
+                setComparisonData(response.data);
+                setError(null);
+            } else {
+                console.error('Unexpected response format:', response.data);
+                throw new Error('Unexpected response format');
+            }
         } catch (err) {
             console.error('Failed to apply filters:', err);
             setError('Failed to apply filters. Please try again.');
         }
     };
 
-    // const handleComparisonToggle = (item) => {
-    //     setComparisonItems(prevItems => {
-    //         const itemExists = prevItems.some(i => i.id === item.id);
-    //         if (itemExists) {
-    //             return prevItems.filter(i => i.id !== item.id);
-    //         } else if (prevItems.length < 3) {
-    //             return [...prevItems, item];
-    //         }
-    //         return prevItems;
-    //     });
-    // };
-
     const handleComparisonToggle = (item) => {
         setComparisonItems(prevItems => {
-            const itemExists = prevItems.some(i => i.MODEL === item.MODEL && i.MAKE === item.MAKE);
+            const itemExists = prevItems.some(i => i.label === item.label);
             if (itemExists) {
-                return prevItems.filter(i => i.MODEL !== item.MODEL || i.MAKE !== item.MAKE);
+                return prevItems.filter(i => i.label !== item.label);
             } else if (prevItems.length < 3) {
                 return [...prevItems, item];
             }
@@ -181,8 +188,9 @@ const App = () => {
                             <h2>{chartTitles[key]}</h2>
                             {comparisonData.length > 0 ? (
                                 <DataTable
-                                data={transformDataForChart(comparisonData, key)}
-                                onComparisonToggle={handleComparisonToggle}
+                                    data={transformDataForChart(comparisonData, key)}
+                                    onComparisonToggle={handleComparisonToggle}
+                                    comparisonItems={comparisonItems}
                                 />
                             ) : (
                                 <p className="no-data-message">No data available for {chartTitles[key]}.</p>
@@ -191,7 +199,7 @@ const App = () => {
                         ))}
                     </div>
                     <div className="comparison-view">
-                        <h2>Comparison View</h2>\                        
+                        <h2>Comparison View</h2>                        
                         <ComparisonView items={comparisonData} />
                     </div>
                     <div className="analysis-results">
