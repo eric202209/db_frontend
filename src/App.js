@@ -96,33 +96,57 @@ const App = () => {
 
     const transformDataForChart = (data, chartType) => {
       switch(chartType) {
-          case 'avgConsMake':
-              return data.map(item => ({
-                  label: `${item.MAKE} ${item.MODEL}`,
-                  value: item.COMBINED_CONSUMPTION
-              })).reduce((acc, obj) => acc + obj.value, 0) / data.length;
-          case 'co2ByClass':
-              return data.map(item => ({ label: item.VEHICLE_CLASS, value: item.CO2_EMISSIONS }));
-          case 'fuelTypeDist':
-              return data.map(item => ({ label: item.FUEL_TYPE, value: 1 })); // Count of each fuel type
-          case 'bestSmog':
-              return data.map(item => ({ label: `${item.MAKE} ${item.MODEL}`, value: item.SMOG_RATING }));
-          case 'consByTrans':
-              return data.map(item => ({
-                  label: item.TRANSMISSION,
-                  value: item.COMBINED_CONSUMPTION
-              })).reduce((acc, obj) => acc + obj.value, 0) / data.length;
-          case 'co2RatingPct':
-              return data.map(item => ({ label: `${item.MAKE} ${item.MODEL}`, value: item.CO2_RATING }));
-          case 'topLowCo2':
-              return data.map(item => ({ label: `${item.MAKE} ${item.MODEL}`, value: item.CO2_EMISSIONS }));
-          case 'topEfficient':
-              return data.map(item => ({ label: `${item.MAKE} ${item.MODEL}`, value: item.COMBINED_CONSUMPTION }));
-          default:
-              return [];
+        case 'avgConsMake':
+          // Group by MAKE and calculate average COMBINED_CONSUMPTION
+          const makeGroups = data.reduce((acc, item) => {
+            if (!acc[item.MAKE]) acc[item.MAKE] = [];
+            acc[item.MAKE].push(item.COMBINED_CONSUMPTION);
+            return acc;
+          }, {});
+          return Object.entries(makeGroups).map(([make, consumptions]) => ({
+            label: make,
+            value: consumptions.reduce((sum, val) => sum + val, 0) / consumptions.length
+          }));
+    
+        case 'consByTrans':
+          // Group by TRANSMISSION and calculate average COMBINED_CONSUMPTION
+          const transGroups = data.reduce((acc, item) => {
+            if (!acc[item.TRANSMISSION]) acc[item.TRANSMISSION] = [];
+            acc[item.TRANSMISSION].push(item.COMBINED_CONSUMPTION);
+            return acc;
+          }, {});
+          return Object.entries(transGroups).map(([transmission, consumptions]) => ({
+            label: transmission,
+            value: consumptions.reduce((sum, val) => sum + val, 0) / consumptions.length
+          }));
+    
+        case 'co2ByClass':
+          return data.map(item => ({ label: item.VEHICLE_CLASS, value: item.CO2_EMISSIONS }));
+    
+        case 'fuelTypeDist':
+          const fuelTypeCounts = data.reduce((acc, item) => {
+            acc[item.FUEL_TYPE] = (acc[item.FUEL_TYPE] || 0) + 1;
+            return acc;
+          }, {});
+          return Object.entries(fuelTypeCounts).map(([fuelType, count]) => ({ label: fuelType, value: count }));
+    
+        case 'bestSmog':
+          return data.map(item => ({ label: `${item.MAKE} ${item.MODEL}`, value: item.SMOG_RATING }));
+    
+        case 'co2RatingPct':
+          return data.map(item => ({ label: item.CO2_RATING.toString(), value: item.PERCENTAGE }));
+    
+        case 'topLowCo2':
+          return data.map(item => ({ label: item.MAKE, value: item.AVG_CO2 }));
+    
+        case 'topEfficient':
+          return data.map(item => ({ label: `${item.MAKE} ${item.MODEL}`, value: item.COMBINED_CONSUMPTION }));
+    
+        default:
+          return [];
       }
-  };
-
+    };
+    
     const exportToCSV = () => {
         if (selectedCharts.length === 0) return;
 

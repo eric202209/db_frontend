@@ -15,91 +15,102 @@ const AnalysisResults = ({ data, comparisonData }) => {
     ];
 
     const formatChartData = (rawData, key, isComparison) => {
-      if (!rawData || (Array.isArray(rawData) && rawData.length === 0)) return [];
+        if (!rawData || (Array.isArray(rawData) && rawData.length === 0)) return [];
   
-      const processData = (data) => {
-          const dataArray = Array.isArray(data) ? data : [data];
-          
-          switch (key) {
-              case 'avgConsMake':
-                  return dataArray.map(item => ({
-                      label: item.MAKE,
-                      value: parseFloat(item.COMBINED_CONSUMPTION)
-                  }));
-              case 'co2ByClass':
-                  return dataArray.map(item => ({
-                      label: item.VEHICLE_CLASS,
-                      value: parseFloat(item.CO2_EMISSIONS)
-                  }));
-              case 'fuelTypeDist':
-                  return dataArray.map(item => ({
-                      label: item.FUEL_TYPE,
-                      value: 1
-                  }));
-              case 'bestSmog':
-                  return dataArray.map(item => ({
-                      label: `${item.MAKE} ${item.MODEL}`,
-                      value: parseFloat(item.SMOG_RATING)
-                  }));
-              case 'consByTrans':
-                  return dataArray.map(item => ({
-                      label: item.TRANSMISSION,
-                      value: parseFloat(item.COMBINED_CONSUMPTION)
-                  }));
-              case 'co2RatingPct':
-                  return dataArray.map(item => ({
-                      label: item.CO2_RATING.toString(),
-                      value: 1
-                  }));
-              case 'topLowCo2':
-                  return dataArray.map(item => ({
-                      label: `${item.MAKE} ${item.MODEL}`,
-                      value: parseFloat(item.CO2_EMISSIONS)
-                  }));
-              case 'topEfficient':
-                  return dataArray.map(item => ({
-                      label: `${item.MAKE} ${item.MODEL}`,
-                      value: parseFloat(item.COMBINED_CONSUMPTION)
-                  }));
-              default:
-                  return [];
-          }
-      };
+        const processData = (data) => {
+            const dataArray = Array.isArray(data) ? data : [data];
+       
+        switch (key) {
+            case 'avgConsMake':
+                return dataArray.map(item => ({
+                    label: item.MAKE,
+                    value: parseFloat(item.COMBINED_CONSUMPTION)
+                }));
+            case 'co2ByClass':
+                return dataArray.map(item => ({
+                    label: item.VEHICLE_CLASS,
+                    value: parseFloat(item.CO2_EMISSIONS)
+                }));
+            case 'fuelTypeDist':
+                // Count occurrences of each fuel type
+                const fuelTypeCounts = dataArray.reduce((acc, item) => {
+                    acc[item.FUEL_TYPE] = (acc[item.FUEL_TYPE] || 0) + 1;
+                    return acc;
+                }, {});
+                return Object.entries(fuelTypeCounts).map(([fuelType, count]) => ({
+                    label: fuelType,
+                    value: count
+                }));
+            case 'bestSmog':
+                return dataArray.map(item => ({
+                    label: `${item.MAKE} ${item.MODEL}`,
+                    value: parseFloat(item.SMOG_RATING)
+                }));
+            case 'consByTrans':
+                return dataArray.map(item => ({
+                    label: item.TRANSMISSION,
+                    value: parseFloat(item.COMBINED_CONSUMPTION)
+                }));
+            case 'co2RatingPct':
+                // Count occurrences of each CO2 rating
+                const co2RatingCounts = dataArray.reduce((acc, item) => {
+                    acc[item.CO2_RATING] = (acc[item.CO2_RATING] || 0) + 1;
+                    return acc;
+                }, {});
+                const totalCount = dataArray.length;
+                return Object.entries(co2RatingCounts).map(([rating, count]) => ({
+                    label: rating.toString(),
+                    value: (count / totalCount) * 100 
+                }));
+            case 'topLowCo2':
+                return dataArray.map(item => ({
+                    label: `${item.MAKE} ${item.MODEL}`,
+                    value: parseFloat(item.CO2_EMISSIONS)
+                }));
+            case 'topEfficient':
+                return dataArray.map(item => ({
+                    label: `${item.MAKE} ${item.MODEL}`,
+                    value: parseFloat(item.COMBINED_CONSUMPTION)
+                }));
+            default:
+                return [];
+        }
+    };
 
-      if (isComparison) {
+    if (isComparison) {
         return processData(rawData);
-      } else {
-        // Existing logic for overall analysis data
-        return rawData.map(item => {
-            const labels = Object.keys(item);
-            let labelIndex, valueIndex;
+        } else {
+            // Existing logic for overall analysis data
+            return rawData.map(item => {
+                const labels = Object.keys(item);
+                let labelIndex, valueIndex;
     
-            switch (key) {
-                case 'fuelTypeDist':
-                case 'avgConsMake':
-                case 'co2ByClass':
-                case 'consByTrans':
-                case 'topLowCo2':
-                    labelIndex = 1;
-                    valueIndex = 2;
-                    break;
-                case 'bestSmog':
-                case 'topEfficient':
-                    labelIndex = 2;
-                    valueIndex = 3;
-                    break;
-                case 'co2RatingPct':
-                    labelIndex = 1;
-                    valueIndex = 3;
-                    break;
-                default:
-                    return null;
-            }
-    
-            return {
-                label: item[labels[labelIndex]],
-                value: parseFloat(item[labels[valueIndex]])
-            };
+                switch (key) {
+                    case 'fuelTypeDist':
+                    case 'avgConsMake':
+                    case 'co2ByClass':
+                    case 'consByTrans':
+                    case 'topLowCo2':
+                        labelIndex = 1;
+                        valueIndex = 2;
+                        break;
+                    case 'bestSmog':
+                    case 'topEfficient':
+                        labelIndex = 2;
+                        valueIndex = 3;
+                        break;
+                    case 'co2RatingPct':
+                        labelIndex = 1;
+                        valueIndex = 3;
+                        break;
+                    default:
+                        return null;
+                }
+        
+                return {
+                    label: item[labels[labelIndex]],
+                    value: parseFloat(item[labels[valueIndex]])
+                };
         }).filter(Boolean);
       }
     }

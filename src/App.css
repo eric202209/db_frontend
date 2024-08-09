@@ -135,6 +135,7 @@ h2 {
   background-color: var(--background);
   border-radius: 8px;
   margin-bottom: 20px;
+  margin-left: 20px;
 }
 
 .chart-section {
