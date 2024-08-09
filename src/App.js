@@ -44,78 +44,84 @@ const App = () => {
     }, []);
 
     const handleFilterChange = async (selectedVehicles) => {
-        if (!selectedVehicles || selectedVehicles.length === 0) {
-            setComparisonData([]);
-            setError(null);
-            return;
-        }
-        
-        try {
-            const response = await axios.get('/api/filtered-data', {
-                params: { vehicles: JSON.stringify(selectedVehicles) }
-            });
+      if (!selectedVehicles || selectedVehicles.length === 0) {
+          setComparisonData([]);
+          setError(null);
+          return;
+      }
+      
+      try {
+          const response = await axios.get('/api/filtered-data', {
+              params: { vehicles: JSON.stringify(selectedVehicles) }
+          });
 
-            // Log the response for debugging
-            console.log('API response:', response);
+          // Log the response for debugging
+          console.log('API response:', response);
 
-            // Check if the response is JSON
-            try {
-                if (typeof response.data === 'string') {
-                    response.data = JSON.parse(response.data);
-                }
-            } catch (e) {
-                console.error('Error parsing JSON:', e);
-                throw new Error('Invalid JSON format');
-            }
-            
-            // Check if the response is an array
-            if (Array.isArray(response.data)) {
-                setComparisonData(response.data);
-                setError(null);
-            } else {
-                console.error('Unexpected response format:', response.data);
-                throw new Error('Unexpected response format');
-            }
-        } catch (err) {
-            console.error('Failed to apply filters:', err);
-            setError('Failed to apply filters. Please try again.');
-        }
-    };
+          // Check if the response is JSON
+          try {
+              if (typeof response.data === 'string') {
+                  response.data = JSON.parse(response.data);
+              }
+          } catch (e) {
+              console.error('Error parsing JSON:', e);
+              throw new Error('Invalid JSON format');
+          }
+          
+          // Check if the response is an array
+          if (Array.isArray(response.data)) {
+              setComparisonData(response.data);
+              setError(null);
+          } else {
+              console.error('Unexpected response format:', response.data);
+              throw new Error('Unexpected response format');
+          }
+      } catch (err) {
+          console.error('Failed to apply filters:', err);
+          setError('Failed to apply filters. Please try again.');
+      }
+  };
 
     const handleComparisonToggle = (item) => {
-        setComparisonItems(prevItems => {
-            const itemExists = prevItems.some(i => i.label === item.label);
-            if (itemExists) {
-                return prevItems.filter(i => i.label !== item.label);
-            } else if (prevItems.length < 3) {
-                return [...prevItems, item];
-            }
-            return prevItems;
-        });
+      setComparisonItems(prevItems => {
+          const itemExists = prevItems.some(i => i.label === item.label);
+          if (itemExists) {
+              return prevItems.filter(i => i.label !== item.label);
+          } else if (prevItems.length < 3) {
+              return [...prevItems, item];
+          }
+          return prevItems;
+      });
     };
 
     const transformDataForChart = (data, chartType) => {
-        switch(chartType) {
+      switch(chartType) {
           case 'avgConsMake':
-            return data.map(item => ({ label: item.MAKE, value: item.FUEL_CONSUMPTION_CITY }));
+              return data.map(item => ({
+                  label: `${item.MAKE} ${item.MODEL}`,
+                  value: item.COMBINED_CONSUMPTION
+              })).reduce((acc, obj) => acc + obj.value, 0) / data.length;
           case 'co2ByClass':
-            return data.map(item => ({ label: item.VEHICLE_CLASS, value: item.CO2_EMISSIONS }));
+              return data.map(item => ({ label: item.VEHICLE_CLASS, value: item.CO2_EMISSIONS }));
           case 'fuelTypeDist':
-            return data.map(item => ({ label: item.FUEL_TYPE, value: 1 })); // Count of each fuel type
+              return data.map(item => ({ label: item.FUEL_TYPE, value: 1 })); // Count of each fuel type
           case 'bestSmog':
-            return data.map(item => ({ label: `${item.MAKE} ${item.MODEL}`, value: item.SMOG_RATING }));
+              return data.map(item => ({ label: `${item.MAKE} ${item.MODEL}`, value: item.SMOG_RATING }));
           case 'consByTrans':
-            return data.map(item => ({ label: item.TRANSMISSION, value: item.FUEL_CONSUMPTION_COMBINED }));
+              return data.map(item => ({
+                  label: item.TRANSMISSION,
+                  value: item.COMBINED_CONSUMPTION
+              })).reduce((acc, obj) => acc + obj.value, 0) / data.length;
           case 'co2RatingPct':
-            return data.map(item => ({ label: `${item.MAKE} ${item.MODEL}`, value: item.CO2_RATING }));
+              return data.map(item => ({ label: `${item.MAKE} ${item.MODEL}`, value: item.CO2_RATING }));
           case 'topLowCo2':
-            return data.map(item => ({ label: `${item.MAKE} ${item.MODEL}`, value: item.CO2_EMISSIONS }));
+              return data.map(item => ({ label: `${item.MAKE} ${item.MODEL}`, value: item.CO2_EMISSIONS }));
           case 'topEfficient':
-            return data.map(item => ({ label: `${item.MAKE} ${item.MODEL}`, value: item.FUEL_CONSUMPTION_COMBINED }));
+              return data.map(item => ({ label: `${item.MAKE} ${item.MODEL}`, value: item.COMBINED_CONSUMPTION }));
           default:
-            return [];
-        }
-    };
+              return [];
+      }
+  };
 
     const exportToCSV = () => {
         if (selectedCharts.length === 0) return;
@@ -145,69 +151,87 @@ const App = () => {
 
     return (
         <div className={`app ${isDarkMode ? 'dark-mode' : ''}`}>
-            <div className="dashboard">
-                <h1>Fuel Consumption Dashboard</h1>
-                <button className="mode-toggle" onClick={() => setIsDarkMode(!isDarkMode)}>
-                    Toggle {isDarkMode ? 'Light' : 'Dark'} Mode
-                </button>
-                <Suspense fallback={<div className="loading">Loading...</div>}>
-                    <FilterPanel onFilterChange={handleFilterChange} />
-                    <div className="chart-selector">
-                        <select multiple onChange={(e) => {
-                            const options = Array.from(e.target.selectedOptions, option => option.value);
-                            setSelectedCharts(options);
-                        }} value={selectedCharts}>
-                            {Object.entries(chartTitles).map(([key, value]) => (
-                                <option key={key} value={key}>{value}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="charts">
-                        {selectedCharts.length > 0 ? (
-                            selectedCharts.map(chartType => (
-                            <div key={chartType} className="chart-section">
-                                <h2>{chartTitles[chartType]}</h2>
-                                {comparisonData.length > 0 ? (
-                                <Chart 
-                                    data={transformDataForChart(comparisonData, chartType)} 
-                                    title={chartTitles[chartType]} 
-                                    type={chartType} 
-                                />
-                                ) : (
-                                <div className="no-data-message">No data available for {chartTitles[chartType]}.</div>
-                                )}
-                            </div>
-                            ))
+          <div className="dashboard">
+            <h1>Fuel Consumption Dashboard</h1>
+            <button className="mode-toggle" onClick={() => setIsDarkMode(!isDarkMode)}>
+              Toggle {isDarkMode ? 'Light' : 'Dark'} Mode
+            </button>
+            <Suspense fallback={<div className="loading">Loading...</div>}>
+              <FilterPanel onFilterChange={handleFilterChange} />
+              <div className="chart-selector">
+                <select multiple onChange={(e) => {
+                  const options = Array.from(e.target.selectedOptions, option => option.value);
+                  setSelectedCharts(options);
+                }} value={selectedCharts}>
+                  {Object.entries(chartTitles).map(([key, value]) => (
+                    <option key={key} value={key}>{value}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="charts">
+                {selectedCharts.length > 0 ? (
+                    selectedCharts.map(chartType => (
+                    <div key={chartType} className="chart-section">
+                        <h2>{chartTitles[chartType]}</h2>
+                        {comparisonData.length > 0 ? (
+                        <Chart 
+                            data={transformDataForChart(comparisonData, chartType)} 
+                            title={chartTitles[chartType]} 
+                            type={chartType} 
+                        />
                         ) : (
-                            <div className="no-data-message">No charts selected.</div>
+                        <div className="no-data-message">No data available for {chartTitles[chartType]}.</div>
                         )}
                     </div>
-                    <div className="data-table">
-                        {Object.keys(chartTitles).map(key => (
-                            <div className={`chart-section ${key}`} key={key}>
-                            <h2>{chartTitles[key]}</h2>
-                            {comparisonData.length > 0 ? (
-                                <DataTable
-                                    data={transformDataForChart(comparisonData, key)}
-                                    onComparisonToggle={handleComparisonToggle}
-                                    comparisonItems={comparisonItems}
-                                />
-                            ) : (
-                                <p className="no-data-message">No data available for {chartTitles[key]}.</p>
-                            )}
-                            </div>
-                        ))}
+                    ))
+                ) : (
+                    <div className="no-data-message">No charts selected.</div>
+                )}
+              </div>
+
+              <div className="comparison-view">
+                <h2>Vehicle Comparison</h2>
+                {loading ? (
+                  <div className="loading">Loading comparison data...</div>
+                ) : error ? (
+                  <div className="error-message">{error}</div>
+                ) : comparisonData.length > 0 ? (
+                  <ComparisonView items={comparisonData} />
+                ) : (
+                  <div className="no-data-message">Select vehicles to compare.</div>
+                )}
+              </div>
+
+              {/* <div className="data-table">
+                {comparisonData.length > 0 && (
+                  <div className="data-table">
+                    <h2>Vehicle Data Table</h2>
+                    <DataTable data={comparisonData} onComparisonToggle={handleComparisonToggle} />
+                  </div>
+                )}
+              </div> */}
+              
+              {/* Use comparisonItems */}
+              {comparisonItems.length > 0 && (
+                <div className="selected-comparisons">
+                  <h2>Selected for Comparison</h2>
+                  {comparisonItems.map((item, index) => (
+                    <div key={index} className="comparison-item">
+                      {item.label}
+                      <button onClick={() => handleComparisonToggle(item)}>Remove</button>
                     </div>
-                    <div className="comparison-view">
-                        <h2>Comparison View</h2>                        
-                        <ComparisonView items={comparisonData} />
-                    </div>
-                    <div className="analysis-results">
-                        <AnalysisResults data={data} comparisonData={comparisonData}/>
-                    </div>
-                    <button className="export-button" onClick={exportToCSV}>Export Data to CSV</button>
-                </Suspense>
-            </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="analysis-results">
+                <AnalysisResults data={data} comparisonData={comparisonData}/>
+              </div>
+              
+              <button className="export-button" onClick={exportToCSV}>Export Data to CSV</button>
+            </Suspense>
+          </div>
         </div>
     );
 };

@@ -1,42 +1,75 @@
 import React from 'react';
 import { Table } from 'react-bootstrap';
+import { Bar } from 'react-chartjs-2';
 
 const ComparisonView = ({ items }) => {
   if (!items || items.length === 0) return <p>No items selected for comparison.</p>;
 
-  // Log the items to inspect their structure
-  console.log('Comparison items:', items);
+  const compareFields = [
+    'MODEL_YEAR',
+    'MAKE',
+    'MODEL',
+    'VEHICLE_CLASS',
+    'ENGINE_SIZE',
+    'CYLINDERS',
+    'TRANSMISSION',
+    'FUEL_TYPE',
+    'COMBINED_CONSUMPTION',
+    'COMBINED_MPG',
+    'CO2_EMISSIONS',
+    'SMOG_RATING'
+  ];
 
-  // Dynamically get all keys from the first item
-  const allKeys = Object.keys(items[0] || {});
+  const chartData = {
+    labels: items.map(item => `${item.MAKE} ${item.MODEL}`),
+    datasets: [
+      {
+        label: 'Combined Consumption (L/100km)',
+        data: items.map(item => item.COMBINED_CONSUMPTION),
+        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+      },
+      {
+        label: 'CO2 Emissions (g/km)',
+        data: items.map(item => item.CO2_EMISSIONS),
+        backgroundColor: 'rgba(255, 99, 132, 0.6)',
+      }
+    ]
+  };
+
+  const chartOptions = {
+    responsive: true,
+    scales: {
+      y: {
+        beginAtZero: true,
+      },
+    },
+  };
 
   return (
     <div className="comparison-view">
-      <h2>Vehicle Comparison</h2>
       <Table striped bordered hover>
         <thead>
           <tr>
             <th>Attribute</th>
             {items.map((item, index) => (
-              <th key={index}>
-                {`${item.MODEL_YEAR || item.model_year || 'Unknown Year'} 
-                  ${item.MAKE || item.make || 'Unknown Make'} 
-                  ${item.MODEL || item.model || 'Unknown Model'}`}
-              </th>
+              <th key={index}>{`${item.MAKE} ${item.MODEL}`}</th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {allKeys.map(key => (
-            <tr key={key}>
-              <td>{key.replace(/_/g, ' ')}</td>
+          {compareFields.map(field => (
+            <tr key={field}>
+              <td>{field.replace(/_/g, ' ')}</td>
               {items.map((item, index) => (
-                <td key={index}>{item[key] != null ? item[key].toString() : 'N/A'}</td>
+                <td key={index}>{item[field]}</td>
               ))}
             </tr>
           ))}
         </tbody>
       </Table>
+
+      <h3>Consumption and Emissions Comparison</h3>
+      <Bar data={chartData} options={chartOptions} />
     </div>
   );
 };

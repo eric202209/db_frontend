@@ -150,13 +150,13 @@ app.get('/api/data', async (req, res) => {
         
         const queries = {
             avgConsMake: 'SELECT model_year, make, avg_cons FROM temp_avg_cons_make',
-            topEfficient: 'SELECT * FROM temp_top_efficient',
-            fuelTypeDist: 'SELECT * FROM temp_fuel_type_dist',
-            co2ByClass: 'SELECT * FROM temp_co2_by_class',
-            bestSmog: 'SELECT * FROM temp_best_smog',
-            consByTrans: 'SELECT * FROM temp_cons_by_trans',
-            co2RatingPct: 'SELECT * FROM temp_co2_rating_pct',
-            topLowCo2: 'SELECT * FROM temp_top_low_co2'
+            topEfficient: 'SELECT model_year, make, model, comb_cons FROM temp_top_efficient',
+            fuelTypeDist: 'SELECT model_year, fuel_type, count_ft FROM temp_fuel_type_dist',
+            co2ByClass: 'SELECT model_year, veh_class, avg_co2 FROM temp_co2_by_class',
+            bestSmog: 'SELECT model_year, make, model, smog_rating FROM temp_best_smog',
+            consByTrans: 'SELECT model_year, trans, avg_cons FROM temp_cons_by_trans',
+            co2RatingPct: 'SELECT model_year, co2_rating, count_cr, percentage FROM temp_co2_rating_pct',
+            topLowCo2: 'SELECT model_year, make, avg_co2 FROM temp_top_low_co2'
         };
 
         const results = await Promise.all(

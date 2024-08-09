@@ -130,11 +130,18 @@ h2 {
   background-color: #555;
 }
 
+.chart-container {
+  padding: 20px;
+  background-color: var(--background);
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
 .chart-section {
   background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 30px;
+  margin-bottom: 40px;
   padding: 20px;
 }
 
@@ -152,18 +159,20 @@ h2 {
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
+  margin-top: 20px 0;
+  font-size: 16px;
 }
 
 .data-table th,
 .data-table td {
-  padding: 12px 15px;
+  border: 1px solid var(--border-color);
+  padding: 12px;
   text-align: center;
   border-bottom: 1px solid #e0e0e0;
 }
 
 .data-table th {
-  background-color: #f5f5f5;
+  background-color: var(--table-header-background);
   font-weight: bold;
 }
 
@@ -254,10 +263,11 @@ h2 {
 
 .no-data-message {
   text-align: center;
-  color: #888;
-  font-style: italic;
+  color: var(--text-muted);
+  font-style: 16px;
   margin-top: 20px;
   font-size: 1.1em;
+  padding: 20px;
 }
 
 .dark-mode .no-data-message {
@@ -277,6 +287,10 @@ h2 {
 h3 {
   font-size: 1.5em;
   margin-bottom: 10px;
+}
+
+.table-container {
+  overflow-x: auto;
 }
 
 /* Button styling */

@@ -27,13 +27,6 @@ const Chart = ({ data, type, title }) => {
     return <div>No data available for this chart.</div>;
   }
 
-  // Enhanced data validation
-  const isValidData = data.every(item => item.hasOwnProperty('label') && item.hasOwnProperty('value'));
-
-  if (!isValidData) {
-    return <div>Error: Invalid data format for chart.</div>;
-  }
-
   const labels = data.map(item => item.label);
   const values = data.map(item => item.value);
 
@@ -53,22 +46,37 @@ const Chart = ({ data, type, title }) => {
   const options = {
     responsive: true,
     plugins: {
-      legend: {
-        position: 'top',
-      },
-      title: {
-        display: true,
-        text: title,
-      },
+      legend: { position: 'top' },
+      title: { display: true, text: title },
       tooltip: {
         callbacks: {
-          label: (context) => `${context.parsed.y || context.parsed}`,
-        },
-      },
+          label: (context) => {
+            let label = context.label || '';
+            if (label) {
+              label += ': ';
+            }
+            if (context.parsed.y !== null) {
+              label += new Intl.NumberFormat('en-US', { 
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2 
+              }).format(context.parsed.y);
+            }
+            return label;
+          }
+        }
+      }
     },
     scales: type !== 'pie' ? {
       y: {
         beginAtZero: true,
+        ticks: {
+          callback: function(value) {
+            return new Intl.NumberFormat('en-US', { 
+              minimumFractionDigits: 2, 
+              maximumFractionDigits: 2 
+            }).format(value);
+          }
+        }
       },
     } : {},
   };
