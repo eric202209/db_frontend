@@ -1,4 +1,5 @@
 How to use this code:
+
 1. Download related database files (.csv) from open.canada.ca
 2. Build or setup your table(.sql) on your Oracle SQL Database
 3. Git clone from Github
@@ -9,3 +10,5 @@ How to use this code:
    which will show on the package.json.
 6. If everything is done, run on "npm run build" or "node Server.js".
    Improve this code to fulfill the group project requirements.
+
+7. 2024/8/9 Server updated. use "npm run dev" to link to API server on PORT 3001 and React development server on PORT 3000.
