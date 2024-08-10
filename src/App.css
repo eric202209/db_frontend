@@ -132,29 +132,61 @@ h2 {
 
 .chart-container {
   padding: 20px;
-  background-color: var(--background);
+  background-color: #ffffff;
   border-radius: 8px;
-  margin-bottom: 20px;
-  margin-left: 20px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  height: 400px; /* Set a fixed height */
+  width: 100%;
+  max-width: 800px; /* Limit maximum width */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.dark-mode .chart-container {
+  background-color: #2c2c2c;
+  box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+}
+
+.chart-container canvas {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.chart-container:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-5px);
+}
+
+/* Specific styling for pie charts */
+.chart-container:has(canvas.chartjs-render-monitor[data-chart-type="pie"]) {
+  height: 350px; /* Slightly smaller height for pie charts */
 }
 
 .chart-section {
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #f8f8f8;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   margin-bottom: 40px;
-  padding: 20px;
+  padding: 30px;
 }
 
 .dark-mode .chart-section {
-  background-color: #2c2c2c;
+  background-color: #1e1e1e;
+  box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1);
 }
 
 .chart-section h2 {
   color: #333;
   text-align: center;
-  margin-bottom: 20px;
-  font-size: 1.8em;
+  margin-bottom: 30px;
+  font-size: 2em;
+  font-weight: bold;
+}
+
+.dark-mode .chart-section h2 {
+  color: #fff;
 }
 
 .data-table {
@@ -334,6 +366,19 @@ button:disabled {
     width: 100%;
   }
 
+  .chart-section {
+    padding: 15px;
+  }
+
+  .chart-container {
+    height: 300px;
+    padding: 10px;
+  }
+
+  .chart-section h2 {
+    font-size: 1.5em;
+  }
+
   .vehicle-item {
     flex-direction: column;
     align-items: flex-start;
@@ -341,5 +386,11 @@ button:disabled {
 
   .vehicle-item button {
     margin-top: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .chart-container {
+    max-width: 100%;
   }
 }

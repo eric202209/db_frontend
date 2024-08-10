@@ -134,11 +134,35 @@ const App = () => {
           return data.map(item => ({ label: `${item.MAKE} ${item.MODEL}`, value: item.SMOG_RATING }));
     
         case 'co2RatingPct':
-          return data.map(item => ({ label: item.CO2_RATING.toString(), value: item.PERCENTAGE }));
-    
+          console.log('Sample item for co2RatingPct:', data[0]);
+          // Calculate percentage for each co2_rating
+          const co2Ratings = data.reduce((acc, item) => {
+            if (!acc[item.co2_rating]) acc[item.co2_rating] = 0;
+            acc[item.co2_rating]++;
+            return acc;
+          }, {});
+          const total = Object.values(co2Ratings).reduce((sum, count) => sum + count, 0);
+          return Object.entries(co2Ratings).map(([rating, count]) => ({
+            label: rating,
+            value: (count / total) * 100
+          }));
+
         case 'topLowCo2':
-          return data.map(item => ({ label: item.MAKE, value: item.AVG_CO2 }));
-    
+          console.log('Sample item for topLowCo2:', data[0]);
+          // Group by make and calculate average co2_emissions
+          const makeGroup2 = data.reduce((acc, item) => {
+            if (!acc[item.make]) acc[item.make] = [];
+            acc[item.make].push(parseFloat(item.co2_emissions));
+            return acc;
+          }, {});
+          return Object.entries(makeGroup2)
+            .map(([make, emissions]) => ({
+              label: make,
+              value: emissions.reduce((sum, val) => sum + val, 0) / emissions.length
+            }))
+            .sort((a, b) => a.value - b.value)
+            .slice(0, 10);
+
         case 'topEfficient':
           return data.map(item => ({ label: `${item.MAKE} ${item.MODEL}`, value: item.COMBINED_CONSUMPTION }));
     
@@ -202,7 +226,7 @@ const App = () => {
                         <Chart 
                             data={transformDataForChart(comparisonData, chartType)} 
                             title={chartTitles[chartType]} 
-                            type={chartType} 
+                            type={chartType === 'co2RatingPct' ? 'pie' : 'bar'} 
                         />
                         ) : (
                         <div className="no-data-message">No data available for {chartTitles[chartType]}.</div>

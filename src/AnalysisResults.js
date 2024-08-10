@@ -7,16 +7,21 @@ const AnalysisResults = ({ data, comparisonData }) => {
         { key: 'avgConsMake', title: "Average Consumption", type: 'bar' },
         { key: 'co2ByClass', title: "CO2 Emissions by Vehicle Class", type: 'bar' },
         { key: 'fuelTypeDist', title: "Fuel Type Distribution", type: 'pie' },
-        { key: 'bestSmog', title: "Best Smog Ratings", type: 'bar' },
+        { key: 'bestSmog', title: "Best Smog Ratings", type: 'line' },
         { key: 'consByTrans', title: "Consumption by Transmission", type: 'bar' },
         { key: 'co2RatingPct', title: "CO2 Rating Percentages", type: 'pie' },
         { key: 'topLowCo2', title: "Top Low CO2 Emitters", type: 'bar' },
-        { key: 'topEfficient', title: "Top Efficient Vehicles", type: 'bar' }
+        { key: 'topEfficient', title: "Top Efficient Vehicles", type: 'line' }
     ];
 
     const formatChartData = (rawData, key, isComparison) => {
-        if (!rawData || (Array.isArray(rawData) && rawData.length === 0)) return [];
-  
+        console.log(`Formatting chart data for ${key}:`, rawData);
+
+        if (!rawData || (Array.isArray(rawData) && rawData.length === 0)) {
+          console.warn(`No data available for ${key}`);
+          return [];
+        }
+
         const processData = (data) => {
             const dataArray = Array.isArray(data) ? data : [data];
        
@@ -52,27 +57,37 @@ const AnalysisResults = ({ data, comparisonData }) => {
                     value: parseFloat(item.COMBINED_CONSUMPTION)
                 }));
             case 'co2RatingPct':
-                // Count occurrences of each CO2 rating
-                const co2RatingCounts = dataArray.reduce((acc, item) => {
-                    acc[item.CO2_RATING] = (acc[item.CO2_RATING] || 0) + 1;
+                const co2Ratings = dataArray.reduce((acc, item) => {
+                    const rating = item.co2_rating || 'Unknown';
+                    acc[rating] = (acc[rating] || 0) + 1;
                     return acc;
                 }, {});
-                const totalCount = dataArray.length;
-                return Object.entries(co2RatingCounts).map(([rating, count]) => ({
-                    label: rating.toString(),
-                    value: (count / totalCount) * 100 
-                }));
+                const total = Object.values(co2Ratings).reduce((sum, count) => sum + count, 0);
+                    return Object.entries(co2Ratings).map(([rating, count]) => ({
+                        label: rating.toString(),
+                        value: (count / total) * 100
+                    }));
             case 'topLowCo2':
-                return dataArray.map(item => ({
-                    label: `${item.MAKE} ${item.MODEL}`,
-                    value: parseFloat(item.CO2_EMISSIONS)
-                }));
+                const makeGroups = dataArray.reduce((acc, item) => {
+                    const make = item.make || 'Unknown';
+                    if (!acc[make]) acc[make] = [];
+                    acc[make].push(parseFloat(item.co2_emissions) || 0);
+                    return acc;
+                }, {});
+                return Object.entries(makeGroups)
+                    .map(([make, emissions]) => ({
+                        label: make,
+                        value: emissions.reduce((sum, val) => sum + val, 0) / emissions.length
+                    }))
+                    .sort((a, b) => a.value - b.value)
+                    .slice(0, 10);
             case 'topEfficient':
                 return dataArray.map(item => ({
                     label: `${item.MAKE} ${item.MODEL}`,
                     value: parseFloat(item.COMBINED_CONSUMPTION)
                 }));
             default:
+                console.warn(`Unsupported key: ${key}`)
                 return [];
         }
     };
