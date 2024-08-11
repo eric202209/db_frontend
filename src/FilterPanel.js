@@ -32,6 +32,7 @@ const FilterPanel = ({ onFilterChange }) => {
             setError('No vehicles selected. Please select at least one vehicle.');
             return;
         }
+        setError(null); // Clear any previous errors
         onFilterChange(selectedVehicles);
     };
 

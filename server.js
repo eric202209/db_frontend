@@ -42,8 +42,11 @@ async function fetchFilteredData(vehicles) {
                 transmission, fuel_type, city_consumption, highway_consumption,
                 combined_consumption, combined_mpg, co2_emissions, co2_rating, smog_rating
             FROM fuel_consumption_ratings
-            WHERE (model_year = :year AND make = :make AND model = :model AND
-                vehicle_class = :class AND transmission = :transmission AND fuel_type = :fuel)
+            WHERE (model_year = :year AND make = :make 
+                AND LOWER(model) LIKE LOWER(:model) || '%'
+                AND LOWER(vehicle_class) LIKE LOWER(:class) || '%'
+                AND LOWER(transmission) LIKE LOWER(:transmission) || '%'
+                AND LOWER(fuel_type) LIKE LOWER(:fuel) || '%')
         `;
         console.log('Received vehicles:', vehicles);
         const results = await Promise.all(vehicles.map(async (vehicle, index) => {
