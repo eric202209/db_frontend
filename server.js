@@ -10,9 +10,9 @@ app.use(express.json());
 
 // Oracle DB Configuration
 const dbConfig = {
-  user: 'COMP214_M24_zou_47',
-  password: '520520.Shi',
-  connectString: '199.212.26.208:1521/SQLD',
+  user: '',
+  password: '',
+  connectString: 'ip/SQLD',
 };
 
 // Helper function to fetch data
