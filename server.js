@@ -45,6 +45,8 @@ async function fetchFilteredData(vehicles) {
             WHERE (model_year = :year AND make = :make 
                 AND LOWER(model) LIKE LOWER(:model) || '%'
                 AND LOWER(vehicle_class) LIKE LOWER(:class) || '%'
+                AND engine_size = :engineSize
+                AND cylinders = :cylinders
                 AND LOWER(transmission) LIKE LOWER(:transmission) || '%'
                 AND LOWER(fuel_type) LIKE LOWER(:fuel) || '%')
         `;
@@ -56,8 +58,10 @@ async function fetchFilteredData(vehicles) {
                 bindParams = {
                     year: parseInt(parts[0]),
                     make: parts[1],
-                    model: parts.slice(2, -3).join(' '),
-                    class: parts[parts.length - 3],
+                    model: parts.slice(2, -5).join(' '),
+                    class: parts[parts.length - 5],
+                    engineSize: parseFloat(parts[parts.length - 4]),
+                    cylinders: parseInt(parts[parts.length - 3]),
                     transmission: parts[parts.length - 2],
                     fuel: parts[parts.length - 1]
                 };
@@ -67,6 +71,8 @@ async function fetchFilteredData(vehicles) {
                     make: vehicle.MAKE,
                     model: vehicle.MODEL,
                     class: vehicle.VEHICLE_CLASS,
+                    engineSize: vehicle.ENGINE_SIZE,
+                    cylinders: vehicle.CYLINDERS,
                     transmission: vehicle.TRANSMISSION,
                     fuel: vehicle.FUEL_TYPE
                 };
@@ -123,10 +129,10 @@ app.get('/api/vehicle-options', async (req, res) => {
         connection = await oracledb.getConnection();
 
         const query = `
-            SELECT DISTINCT MODEL_YEAR, MAKE, MODEL, VEHICLE_CLASS, TRANSMISSION, FUEL_TYPE,
-                   MODEL_YEAR || ' ' || MAKE || ' ' || MODEL || ' ' || VEHICLE_CLASS || ' ' || TRANSMISSION || ' ' || FUEL_TYPE AS vehicle_option
+            SELECT DISTINCT MODEL_YEAR, MAKE, MODEL, VEHICLE_CLASS, TRANSMISSION, ENGINE_SIZE, CYLINDERS, FUEL_TYPE,
+                   MODEL_YEAR || ' ' || MAKE || ' ' || MODEL || ' ' || VEHICLE_CLASS || ' ' || TRANSMISSION || ' ' || ENGINE_SIZE || ' ' || CYLINDERS || ' ' || FUEL_TYPE AS vehicle_option
             FROM fuel_consumption_ratings
-            ORDER BY MODEL_YEAR DESC, MAKE, MODEL, VEHICLE_CLASS, TRANSMISSION, FUEL_TYPE
+            ORDER BY MODEL_YEAR DESC, MAKE, MODEL, VEHICLE_CLASS, TRANSMISSION, ENGINE_SIZE, CYLINDERS, FUEL_TYPE
         `;
         
         const result = await connection.execute(query, [], { outFormat: oracledb.OUT_FORMAT_OBJECT });
